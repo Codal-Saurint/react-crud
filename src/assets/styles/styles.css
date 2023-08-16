@@ -5,7 +5,9 @@
 /*
   1. Use a more-intuitive box-sizing model.
 */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 /*
@@ -26,147 +28,162 @@ body {
 /*
   5. Improve media defaults
 */
-img, picture, video, canvas, svg {
+img,
+picture,
+video,
+canvas,
+svg {
   display: block;
   max-width: 100%;
 }
 /*
   6. Remove built-in form typography styles
 */
-input, button, textarea, select {
+input,
+button,
+textarea,
+select {
   font: inherit;
 }
 /*
   7. Avoid text overflows
 */
-p, h1, h2, h3, h4, h5, h6 {
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   overflow-wrap: break-word;
 }
 /*
   8. Create a root stacking context
 */
-#root, #__next {
+#root,
+#__next {
   isolation: isolate;
 }
 
 .addform-container {
-	display: flex;
-	align-items: center;
-	/* border: 1px solid black; */
-	justify-content: space-between;
+  display: flex;
+  align-items: center;
+  /* border: 1px solid black; */
+  justify-content: space-between;
 }
 
 .container-form-1 {
-	/* border: 0.5px solid blue; */
+  /* border: 0.5px solid blue; */
 }
 .add-form-border-conatiner {
-	margin: 5px;
-	/* border: 1px solid maroon; */
-	height: 100%;
-	padding: 10px;
+  margin: 5px;
+  /* border: 1px solid maroon; */
+  height: 100%;
+  padding: 10px;
 }
 .required {
-	color: red;
+  color: red;
 }
 
 .add-container-1 {
-	display: flex;
+  display: flex;
 }
 .fname-lname-label-input-container {
-	display: flex;
-	flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 
 .padding-right-10 {
-	padding-right: 10px;
+  padding-right: 10px;
 }
 
 .input-class {
-	height: 30px;
-	border-radius: 5px;
-	border-color: grey;
+  height: 30px;
+  border-radius: 5px;
+  border-color: grey;
 }
 
 .width-50 {
-	width: 50%;
+  width: 50%;
 }
 .width-100 {
-	width: 100%;
+  width: 100%;
 }
 
 .btn-group button {
-    background-color:transparent;
-    color:grey;
-    border: 0.5px solid grey;
-    font-size: 14px;
-    padding: 4px 10px;
-    height: 40px;
+  background-color: transparent;
+  color: grey;
+  border: 0.5px solid grey;
+  font-size: 14px;
+  padding: 4px 10px;
+  height: 40px;
 }
 
-.btn-group button:hover{
-    color:white;
-    background-color: gray;
-    font-weight: 400;
+.btn-group button:hover {
+  color: white;
+  background-color: gray;
+  font-weight: 400;
 }
 
-.btn-group button:first-child{
-    border-top-left-radius: 10px;
-    border-bottom-left-radius: 10px;
+.btn-group button:first-child {
+  border-top-left-radius: 10px;
+  border-bottom-left-radius: 10px;
 }
 
-.btn-group button:last-child{
-    border-top-right-radius: 10px;
-    border-bottom-right-radius: 10px;
+.btn-group button:last-child {
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 10px;
 }
 textarea {
-	resize: vertical;
+  resize: vertical;
 }
 
 .submit-container {
-	display: flex;
-	padding-top: 20px;
-	justify-content: space-between;
+  display: flex;
+  padding-top: 20px;
+  justify-content: space-between;
 }
 
-.submit-container button{
-    min-width: 200px;
+.submit-container button {
+  min-width: 200px;
 }
 
-.submit-container button{
-    background-color: transparent;
-    height: 35px;
-    border: 0.5px solid grey;
-    border-radius: 5px;
+.submit-container button {
+  background-color: transparent;
+  height: 35px;
+  border: 0.5px solid grey;
+  border-radius: 5px;
 }
 
-.submit-container button:first-child{
-    background-color: #0d6efd;
-    color:white;
+.submit-container button:first-child {
+  background-color: #0d6efd;
+  color: white;
 }
 
-.submit-container button:first-child:hover{
-    background-color: #0a58ca;
+.submit-container button:first-child:hover {
+  background-color: #0a58ca;
 }
 
-.invalid-feedback{
+.invalid-feedback {
   display: block !important;
-    color:red;
+  color: red;
 }
 
-.invalid-input{
-    border-color:red
+.invalid-input {
+  border-color: red;
 }
-.adduser-address{
-  border:1px solid #ced4da;
+.adduser-address {
+  border: 1px solid #ced4da;
 }
 
-.adduser-address:hover,.adduser-address:focus{
+.adduser-address:hover,
+.adduser-address:focus {
   outline-color: #86b7fe;
-  border:1px solid #86b7fe;
+  border: 1px solid #86b7fe;
 }
-table{
+table {
   width: 100%;
 }
-td{
+td {
   width: 33%;
 }

@@ -1,7 +1,7 @@
 export function formattedDate(string) {
-    return new Date(string).toLocaleDateString('en-US');
+  return new Date(string).toLocaleDateString('en-US');
 }
-  
+
 export function getAge(dateString) {
   var today = new Date();
   var birthDate = new Date(dateString);
@@ -12,5 +12,3 @@ export function getAge(dateString) {
   }
   return age;
 }
-
-

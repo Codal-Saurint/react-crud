@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button, Input, FormFeedback } from "reactstrap";
 import { getAge} from "../../utils/modules";
-import * as faker from "@faker-js/faker";
+import * as faker from "@faker-js/faker"; 
 
 
 export const Add = () => {

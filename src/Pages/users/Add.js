@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button, Input, FormFeedback } from "reactstrap";
-import { getAge } from "../utils/helper";
+import { getAge} from "../../utils/modules";
+import * as faker from "@faker-js/faker";
+
 
 export const Add = () => {
 	// const initialValues = { firstname: "",lastname:"",};
@@ -26,25 +28,32 @@ export const Add = () => {
 	const createUser = (e) => {
 		e.preventDefault();
 		setSubmitted(true);
+
 		validate();
-		if (Object.keys(errors).length === 0 && submitted) {
+		if (
+			Object.keys(errors).length === 0 &&
+			firstName.length > 0 &&
+			emailAddress.length > 0 &&
+			lastName.length > 0
+		) {
 			const tempUsers = JSON.parse(localStorage.getItem("STUSERS"));
 			const sampleDate = new Date("January 1, 2000 23:15:30 UTC").toJSON();
 			tempUsers.unshift({
 				address,
 				age: getAge(sampleDate),
-				createdOn: sampleDate,
+				createdAt: sampleDate,
 				email: emailAddress,
-				firstname: firstName,
+				firstName: firstName,
 				gender,
-				lastname: lastName,
+				id: faker.faker.datatype.uuid(),
+				lastName: lastName,
 				note,
-				updatedAt: new Date().toJSON(),
 				status,
-				userId: "1111",
+				updatedAt: new Date().toJSON(),
 			});
-			//To do :- Add random string function for userid and add toast message for createUser
-			localStorage.setItem('STUSERS',JSON.stringify(tempUsers))
+			//To do :- add toast message for createUser
+			console.log("LC", tempUsers);
+			localStorage.setItem("STUSERS", JSON.stringify(tempUsers));
 		}
 	};
 
@@ -66,11 +75,11 @@ export const Add = () => {
 			}
 		}
 		setErrors(errors);
-	}, [emailAddress, firstName.length, lastName.length, submitted]);
+	}, [emailAddress, firstName, lastName, submitted]);
 
 	useEffect(() => {
 		validate();
-	}, [emailAddress, firstName.length, lastName.length, validate]);
+	}, [emailAddress, firstName, lastName, submitted, validate]);
 
 	const setGenderFromButton = (e, id) => {
 		setIsActiveGender(id);
@@ -125,7 +134,6 @@ export const Add = () => {
 											type="text"
 											value={firstName}
 											onChange={(e) => setFirstName(e.target.value)}
-											{...(firstName.length === 0 ? "required" : "")}
 											invalid={errors?.firstName}
 										/>
 

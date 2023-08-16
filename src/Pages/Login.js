@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { getAge } from "../utils/helper";
+import { getAge } from "../utils/modules";
 import * as faker from "@faker-js/faker";
 
 export const Login = () => {
@@ -35,10 +35,10 @@ export const Login = () => {
 			age: getAge(faker.faker.date.birthdate()),
 			createdAt: faker.faker.date.past(),
 			email: faker.faker.internet.email(),
-			firstname: faker.faker.person.firstName(),
+			firstName: faker.faker.person.firstName(),
 			gender: faker.faker.person.sexType(),
-			userId: faker.faker.phone.number(),
-			lastname: faker.faker.person.lastName(),
+			id: faker.faker.datatype.uuid(),
+			lastName: faker.faker.person.lastName(),
 			note:faker.faker.person.bio(),
 			status: get_random_status(["Active", "Inactive"]),
 			updatedAt:new Date().toJSON()

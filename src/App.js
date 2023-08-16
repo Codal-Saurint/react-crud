@@ -1,23 +1,23 @@
 import * as React from "react";
 import { Routes, Route } from "react-router-dom";
-import { Login } from "./Pages/Login";
-import { Users } from "./Pages/Users";
-import { Add } from "./Pages/Add";
-import { Register } from "./Pages/Register";
-import { Dashboard } from "./Pages/Dashboard";
-import { Edit } from "./Pages/Edit";
-import { View } from "./Pages/View";
+import { Login } from "./pages/Login";
+import { Users } from "./pages/users/Users";
+import { Add } from "./pages/users/Add";
+import { Register } from "./pages/Register";
+import { Dashboard } from "./pages/dashboard/Dashboard";
+import { Edit } from "./pages/users/Edit";
+import { View } from "./pages/users/View";
 import { Header } from "./components/Header";
 import { Footer } from "./components/Footer";
-import { AuthLayout } from "./LayoutRoute/AuthLayout";
-import { NonAuthLayout } from "./LayoutRoute/NonAuthLayout";
+import { AuthLayout } from "./layouts/AuthLayout";
+import { NonAuthLayout } from "./layouts/NonAuthLayout";
 
 function App() {
 	return (
 		<React.Fragment>
 			<Header />
 			<Routes>
-				<Route element={<NonAuthLayout />}>
+				<Route path="/" element={<NonAuthLayout />}>
 					<Route path="/login" element={<Login />} />
 					<Route path="/register" element={<Register />} />
 				</Route>

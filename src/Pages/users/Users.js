@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button, Input, Table } from "reactstrap";
-import { Pagination } from "../components/shared/Pagination";
+import { Pagination } from "../../components/shared/Pagination";
 import * as faker from "@faker-js/faker";
-import { formattedDate } from "../utils/helper";
+import { formattedDate } from "../../utils/modules";
 
 export const Users = () => {
 	const [userData, setUserData] = useState([]);
@@ -52,7 +52,7 @@ export const Users = () => {
 		navigate("/users/edit");
 	};
 	const buttonContainer = (
-		<span className="flex items-center gap-2">
+		<span className="flex items-center">
 			<button 
 				type="button"
 				className="btn btn-outline-dark btn-sm flex items-center justify-center p-0 w-6 h-6"
@@ -174,14 +174,14 @@ export const Users = () => {
 										{userData.map((data) => (
 											<tr key={data.userId}>
 												<td>
-													<Link>{data?.userId}</Link>
+													<Link>{data?.id}</Link>
 												</td>
-												<td>{data.firstname}</td>
-												<td>{data.lastname}</td>
+												<td>{data?.firstName}</td>
+												<td>{data?.lastName}</td>
 												<td>
-													<Link to={`mailto:${data.email}`}>{data.email}</Link>
+													<Link to={`mailto:${data?.email}`}>{data?.email}</Link>
 												</td>
-												<td>{formattedDate(data.createdOn)}</td>
+												<td>{formattedDate(data?.createdAt)}</td>
 												<td>{data.status}</td>
 												<td>{buttonContainer}</td>
 											</tr>

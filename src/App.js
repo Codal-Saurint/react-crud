@@ -7,8 +7,8 @@ import { Register } from './pages/register/Register';
 import { Dashboard } from './pages/dashboard/Dashboard';
 import { Edit } from './pages/users/Edit';
 import { View } from './pages/users/View';
-import { Header } from './components/Header';
-import { Footer } from './components/Footer';
+import { Header } from './layouts/Header';
+import { Footer } from './layouts/Footer';
 import { AuthLayout } from './layouts/AuthLayout';
 import { NonAuthLayout } from './layouts/NonAuthLayout';
 

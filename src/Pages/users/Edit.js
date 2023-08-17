@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { Header } from '../../components/Header';
-import { Footer } from '../../components/Footer';
+import { Header } from '../../layouts/Header';
+import { Footer } from '../../layouts/Footer';
 import { Button, Input } from 'reactstrap';
 
 export const Edit = () => {

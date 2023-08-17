@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Button, Input, Table } from 'reactstrap';
 import { Pagination } from '../../components/shared/Pagination';
 import * as faker from '@faker-js/faker';
-import { formattedDate } from '../../utils/modules';
+import { formattedDate } from '../../modules/helper';
 
 export const List = () => {
   const [userData, setUserData] = useState([]);

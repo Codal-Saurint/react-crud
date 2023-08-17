@@ -1,6 +1,6 @@
 import { useNavigate, Link } from 'react-router-dom';
 import { Button, Input, FormFeedback } from 'reactstrap';
-import { getAge } from '../../utils/modules';
+import { getAge } from '../../modules/helper';
 import * as faker from '@faker-js/faker';
 import { useFormik } from 'formik';
 import * as yup from 'yup';

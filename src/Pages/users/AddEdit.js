@@ -1,16 +1,38 @@
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useParams } from 'react-router-dom';
 import { Button, Input, FormFeedback } from 'reactstrap';
 import { getAge } from '../../modules/helper';
 import * as faker from '@faker-js/faker';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
+import { genderButtonNames, statusButtonNames } from '../../data/constants';
+import React, { useEffect, useState } from 'react';
+import { capitalize } from '../../modules/helper';
 
-export const Add = () => {
+export const AddEdit = () => {
   const navigate = useNavigate();
+  let { id } = useParams();
+  const [user, setUser] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    gender: 'male',
+    address: '',
+    note: '',
+    status: 'Active'
+  });
 
   const backToList = () => {
     navigate('/users');
   };
+
+  useEffect(() => {
+    if (id) {
+      const tempUsers = JSON.parse(localStorage.getItem('STUSERS'));
+      const getUser = tempUsers.find((element) => element.id === id);
+      setUser((user) => ({ ...getUser }));
+      console.log('Edit', id, getUser, user);
+    }
+  }, [id, useFormik, setUser]);
 
   const validationSchema = yup.object().shape({
     firstName: yup.string().required('FirstName field is empty'),
@@ -22,42 +44,40 @@ export const Add = () => {
   });
 
   const formik = useFormik({
-    initialValues: {
-      firstName: '',
-      lastName: '',
-      email: '',
-      gender: 'male',
-      address: '',
-      note: '',
-      status: 'active'
-    },
+    initialValues: user,
     validationSchema,
+    enableReinitialize: true,
     onSubmit: (data) => {
-      const tempUsers = JSON.parse(localStorage.getItem('STUSERS'));
-      const sampleDate = new Date('January 1, 2000 23:15:30 UTC').toJSON();
-      tempUsers.unshift({
-        age: getAge(sampleDate),
-        createdAt: sampleDate,
-        id: faker.faker.datatype.uuid(),
-        updatedAt: new Date().toJSON(),
-        ...data
-      });
-      localStorage.setItem('STUSERS', JSON.stringify(tempUsers));
-      console.log('ss', tempUsers);
-      navigate('/users');
+      if (id) {
+        const tempUsers = JSON.parse(localStorage.getItem('STUSERS'));
+        const userIndex = tempUsers.findIndex((element) => element.id === id);
+
+        if (userIndex !== -1) {
+          tempUsers[userIndex] = {
+            ...data,
+            updatedAt: new Date().toJSON()
+          };
+        }
+        console.log('MM', tempUsers);
+        localStorage.setItem('STUSERS', JSON.stringify(tempUsers));
+        navigate('/users');
+      } else {
+        const tempUsers = JSON.parse(localStorage.getItem('STUSERS'));
+        const sampleDate = new Date('January 1, 2000 23:15:30 UTC').toJSON();
+        tempUsers.unshift({
+          age: getAge(sampleDate),
+          createdAt: sampleDate,
+          id: faker.faker.datatype.uuid(),
+          updatedAt: new Date().toJSON(),
+          ...data
+        });
+        localStorage.setItem('STUSERS', JSON.stringify(tempUsers));
+        console.log('ss', tempUsers);
+        navigate('/users');
+      }
     }
   });
-  const genderButtonNames = [
-    { id: 1, name: 'Male' },
-    { id: 2, name: 'Female' },
-    { id: 3, name: 'Other' },
-    { id: 4, name: "Don't want to disclose" }
-  ];
 
-  const statusButtonNames = [
-    { id: 1, name: 'Active' },
-    { id: 2, name: 'Inactive' }
-  ];
   return (
     <div className="flex flex-col min-h-screen">
       <div className="flex-grow rounded-md bg-gray-50 px-[100px] pb-5 min-h-screen flex flex-col">
@@ -65,7 +85,7 @@ export const Add = () => {
           <div className="py-3 pl-5">
             <Link to="/dashboard">Dashboard</Link>&nbsp;/ &nbsp;
             <Link to="/users">Users</Link>&nbsp;/ &nbsp;
-            <Link className="text-black no-underline">Add</Link>
+            <Link className="text-black no-underline">{id ? 'Edit' : 'Add'}</Link>
           </div>
         </div>
         <div className="mt-4 mb-0 font-bold flex justify-between">
@@ -155,7 +175,7 @@ export const Add = () => {
                           onClick={() => formik.setFieldValue('gender', button.name.toLowerCase())}
                           active={formik.values.gender === button.name.toLowerCase()}
                         >
-                          {button.name}
+                          {capitalize(button.name)}
                         </Button>
                       );
                     })}
@@ -195,16 +215,16 @@ export const Add = () => {
                     {statusButtonNames.map((button) => (
                       <Button
                         key={button.id}
-                        onClick={() => formik.setFieldValue('status', button.name.toLowerCase())}
-                        active={formik.values.status === button.name.toLowerCase()}
+                        onClick={() => formik.setFieldValue('status', button.name)}
+                        active={formik.values.status === button.name}
                       >
-                        {button.name}
+                        {capitalize(button.name)}
                       </Button>
                     ))}
                   </div>
                 </div>
                 <div className="submit-container">
-                  <Button type="submit">Add</Button>
+                  <Button type="submit">{id ? 'Update' : 'Add'}</Button>
                   <button>
                     <i class="fa fa-random" style={{ paddingRight: '10px' }}></i>
                     Random Data

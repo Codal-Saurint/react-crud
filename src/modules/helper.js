@@ -12,3 +12,6 @@ export function getAge(dateString) {
   }
   return age;
 }
+
+
+export const capitalize = (s) => (s && s[0].toUpperCase() + s.slice(1)) || '';

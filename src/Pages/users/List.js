@@ -4,6 +4,8 @@ import { Button, Input, Table } from 'reactstrap';
 import { Pagination } from '../../components/shared/Pagination';
 import * as faker from '@faker-js/faker';
 import { formattedDate } from '../../modules/helper';
+import { actionsArray, filterPageArray } from '../../data/constants';
+import { capitalize } from '../../modules/helper';
 
 export const List = () => {
   const [userData, setUserData] = useState([]);
@@ -32,26 +34,13 @@ export const List = () => {
     alert('Hello');
   };
 
-  const actionsArray = [
-    { function: 'sort', name: 'All' },
-    { function: 'sort', name: 'Active' },
-    { function: 'sort', name: 'Inactive' }
-  ];
-  const filterPageArray = [
-    { function: 'sort', name: '10' },
-    { function: 'sort', name: '25' },
-    { function: 'sort', name: '50' },
-    { function: 'sort', name: '100' },
-    { function: 'sort', name: 'All' }
-  ];
-
   const navigateToViewUser = () => {
     navigate('/users/view');
   };
   const navigateToEditUser = () => {
     navigate('/users/edit');
   };
-  const buttonContainer = (
+  const ButtonContainer = ({ id }) => (
     <span className="flex items-center">
       <button
         type="button"
@@ -185,8 +174,13 @@ export const List = () => {
                           <Link to={`mailto:${data?.email}`}>{data?.email}</Link>
                         </td>
                         <td>{formattedDate(data?.createdAt)}</td>
-                        <td>{data.status}</td>
-                        <td>{buttonContainer}</td>
+                        <td>{capitalize(data?.status)}</td>
+
+                        <td>
+                          <Link to={`edit/${data.id}`} className="btn btn-outline-dark btn-sm">
+                            <i class="fa fa-pencil"></i>
+                          </Link>
+                        </td>
                       </tr>
                     ))}
                   </tbody>

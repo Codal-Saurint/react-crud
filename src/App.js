@@ -2,10 +2,9 @@ import * as React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Login } from './pages/login/Login';
 import { List } from './pages/users/List';
-import { Add } from './pages/users/Add';
+import { AddEdit } from './pages/users/AddEdit';
 import { Register } from './pages/register/Register';
 import { Dashboard } from './pages/dashboard/Dashboard';
-import { Edit } from './pages/users/Edit';
 import { View } from './pages/users/View';
 import { Header } from './layouts/Header';
 import { Footer } from './layouts/Footer';
@@ -24,8 +23,8 @@ function App() {
 
         <Route path="/" element={<AuthLayout />}>
           <Route path="users" element={<List />} />
-          <Route path="users/add" element={<Add />} />
-          <Route path="users/edit" element={<Edit />} />
+          <Route path="users/add" element={<AddEdit />} />
+          <Route path="users/edit/:id" element={<AddEdit />} />
           <Route path="users/view" element={<View />} />
           <Route path="dashboard" element={<Dashboard />} />
         </Route>

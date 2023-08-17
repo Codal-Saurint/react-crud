@@ -25,7 +25,7 @@ function App() {
           <Route path="users" element={<List />} />
           <Route path="users/add" element={<AddEdit />} />
           <Route path="users/edit/:id" element={<AddEdit />} />
-          <Route path="users/view" element={<View />} />
+          <Route path="users/view/:id" element={<View />} />
           <Route path="dashboard" element={<Dashboard />} />
         </Route>
         <Route path="*" element={<Login />} />

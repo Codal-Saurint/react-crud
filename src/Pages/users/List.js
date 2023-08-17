@@ -180,6 +180,9 @@ export const List = () => {
                           <Link to={`edit/${data.id}`} className="btn btn-outline-dark btn-sm">
                             <i class="fa fa-pencil"></i>
                           </Link>
+                          <Link to={`view/${data.id}`} className="btn btn-outline-dark btn-sm">
+                            <i class="fa fa-eye"></i>
+                          </Link>
                         </td>
                       </tr>
                     ))}

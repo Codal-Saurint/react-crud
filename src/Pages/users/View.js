@@ -1,39 +1,26 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { Button, Input, Table } from 'reactstrap';
+import { useNavigate, Link, useParams } from 'react-router-dom';
+import { Button, Table } from 'reactstrap';
+import { capitalize, formattedDate } from '../../modules/helper';
 
 export const View = () => {
-  const [firstname, setFirstName] = useState('Saurin');
-  const [lastname, setLastName] = useState('Thakkar');
-  const [emailAddress, setEmailAddress] = useState('sthakkar@codal.com');
-  const [gender, setGender] = useState('');
-  const [address, setAddress] = useState('Codal Systems');
-  const [note, setNote] = useState('Notes for code');
-  const [status, setStatus] = useState('');
-  const [emptyFirstName, setEmptyFirstName] = useState(false);
-  const [emptyLastName, setEmptyLastName] = useState(false);
-  const [emptyEmail, setEmptyEmail] = useState(false);
-
-  const { state } = useLocation();
-
+  const [user, setUser] = useState({});
   const navigate = useNavigate();
+  let { id } = useParams();
 
   const backToList = () => {
     navigate('/users');
   };
-
-  const createUser = () => {
-    if (firstname?.length === 0) {
-      setEmptyFirstName(true);
-    } else if (lastname?.length === 0) {
-      setEmptyLastName(true);
-    } else if (emailAddress?.length === 0) {
-      setEmailAddress(true);
-    } else {
-      setEmptyFirstName(false);
-      setEmptyLastName(false);
-      setEmptyEmail(false);
+  useEffect(() => {
+    if (id) {
+      const tempUsers = JSON.parse(localStorage.getItem('STUSERS'));
+      const getUser = tempUsers.find((element) => element.id === id);
+      setUser((user) => ({ ...getUser }));
     }
+  }, [id, setUser]);
+
+  const navigateToEdit = () => {
+    navigate(`/users/edit/${id}`);
   };
   return (
     <div className="flex flex-col min-h-screen">
@@ -60,50 +47,50 @@ export const View = () => {
                 <tbody>
                   <tr>
                     <th>First Name</th>
-                    <td>Saurin</td>
+                    <td>{user?.firstName}</td>
                   </tr>
                   <tr>
                     <th scope="row">Last Name</th>
-                    <td>Thakkar</td>
+                    <td>{user?.lastName}</td>
                   </tr>
                   <tr>
                     <th scope="row">Email</th>
                     <td>
-                      <Link className="underline text-blue-600">sthakkar@codal.com</Link>
+                      <Link className="underline text-blue-600">{user?.email}</Link>
                     </td>
                   </tr>
                   <tr>
                     <th scope="row">Gender</th>
-                    <td>Male</td>
+                    <td>{capitalize(user?.gender)}</td>
                   </tr>
                   <tr>
                     <th scope="row">Age</th>
-                    <td>26</td>
+                    <td>{user?.age}</td>
                   </tr>
                   <tr>
                     <th scope="row">Address</th>
-                    <td>A-202,Shree Ram kunj Complex,near arvind marg,nana bazaar,ananad</td>
+                    <td>{user?.address}</td>
                   </tr>
                   <tr>
                     <th scope="row">Note</th>
-                    <td>Residential Address</td>
+                    <td>{user?.note}</td>
                   </tr>
                   <tr>
                     <th scope="row">Created At</th>
-                    <td>08/08/2023</td>
+                    <td>{formattedDate(user?.createdAt)}</td>
                   </tr>
                   <tr>
                     <th scope="row">Updated At</th>
-                    <td>08/08/2023</td>
+                    <td>{formattedDate(user?.updatedAt)}</td>
                   </tr>
                   <tr>
                     <th scope="row">Status</th>
-                    <td>Active</td>
+                    <td>{capitalize(user?.status)}</td>
                   </tr>
                   <tr>
                     <td colSpan="2">
                       <span className="flex w-1/5 justify-between">
-                        <button className="btn btn-outline-secondary">
+                        <button onClick={navigateToEdit} className="btn btn-outline-secondary">
                           <i class="fa fa-pencil fa-xs me-2"></i>Edit
                         </button>
                         <button className="btn btn-outline-danger btn-sm">

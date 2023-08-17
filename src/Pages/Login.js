@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { getAge } from '../utils/modules';
 import * as faker from '@faker-js/faker';
+import { useFormik } from 'formik';
+import * as yup from 'yup';
 
 export const Login = () => {
   const [email, setEmail] = useState('');
@@ -24,6 +26,15 @@ export const Login = () => {
       alert('Invalid credentials. Please try again.');
     }
   };
+
+  const validationSchema = yup.object().shape({
+    firstName: yup.string().required('FirstName field is empty'),
+    lastName: yup.string().required('LastName field is empty'),
+    email: yup
+      .string()
+      .required('Email Address field is empty')
+      .email('You have entered invalid email format')
+  });
 
   function get_random_status(list) {
     return list[Math.floor(Math.random() * list.length)];

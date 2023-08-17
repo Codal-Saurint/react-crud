@@ -1,94 +1,52 @@
-import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button, Input, FormFeedback } from 'reactstrap';
 import { getAge } from '../../utils/modules';
 import * as faker from '@faker-js/faker';
+import { useFormik } from 'formik';
+import * as yup from 'yup';
 
 export const Add = () => {
-  // const initialValues = { firstname: "",lastname:"",};
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [emailAddress, setEmailAddress] = useState('');
-  const [gender, setGender] = useState('male');
-  const [address, setAddress] = useState('');
-  const [note, setNote] = useState('');
-  const [status, setStatus] = useState('active');
-  const [errors, setErrors] = useState({});
-  const [submitted, setSubmitted] = useState(false);
-  const [isActiveGender, setIsActiveGender] = useState(1);
-  const [isActiveStatus, setIsActiveStatus] = useState(1);
-
   const navigate = useNavigate();
 
   const backToList = () => {
     navigate('/users');
   };
 
-  const createUser = (e) => {
-    e.preventDefault();
-    setSubmitted(true);
+  const validationSchema = yup.object().shape({
+    firstName: yup.string().required('FirstName field is empty'),
+    lastName: yup.string().required('LastName field is empty'),
+    email: yup
+      .string()
+      .required('Email Address field is empty')
+      .email('You have entered invalid email format')
+  });
 
-    validate();
-    if (
-      Object.keys(errors).length === 0 &&
-      firstName.length > 0 &&
-      emailAddress.length > 0 &&
-      lastName.length > 0
-    ) {
+  const formik = useFormik({
+    initialValues: {
+      firstName: '',
+      lastName: '',
+      email: '',
+      gender: 'male',
+      address: '',
+      note: '',
+      status: 'active'
+    },
+    validationSchema,
+    onSubmit: (data) => {
       const tempUsers = JSON.parse(localStorage.getItem('STUSERS'));
       const sampleDate = new Date('January 1, 2000 23:15:30 UTC').toJSON();
       tempUsers.unshift({
-        address,
         age: getAge(sampleDate),
         createdAt: sampleDate,
-        email: emailAddress,
-        firstName: firstName,
-        gender,
         id: faker.faker.datatype.uuid(),
-        lastName: lastName,
-        note,
-        status,
-        updatedAt: new Date().toJSON()
+        updatedAt: new Date().toJSON(),
+        ...data
       });
-      //To do :- add toast message for createUser
-      console.log('LC', tempUsers);
       localStorage.setItem('STUSERS', JSON.stringify(tempUsers));
+      console.log('ss', tempUsers);
+      navigate('/users');
     }
-  };
-
-  const validate = useCallback(() => {
-    const errors = {};
-    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
-    if (submitted) {
-      if (firstName.length === 0) {
-        errors.firstName = 'Empty Username';
-      }
-      if (lastName.length === 0) {
-        errors.lastName = 'Empty lastname';
-      }
-
-      if (emailAddress.length === 0) {
-        errors.emailAddress = 'Empty Email';
-      } else if (!regex.test(emailAddress)) {
-        errors.emailAddress = 'Invalid Email';
-      }
-    }
-    setErrors(errors);
-  }, [emailAddress, firstName, lastName, submitted]);
-
-  useEffect(() => {
-    validate();
-  }, [emailAddress, firstName, lastName, submitted, validate]);
-
-  const setGenderFromButton = (e, id) => {
-    setIsActiveGender(id);
-    setGender(e.target.innerText.toLowerCase());
-  };
-
-  const setStatusFromButton = (e, id) => {
-    setIsActiveStatus(id);
-    setStatus(e.target.innerText);
-  };
+  });
   const genderButtonNames = [
     { id: 1, name: 'Male' },
     { id: 2, name: 'Female' },
@@ -120,20 +78,28 @@ export const Add = () => {
         <div className="flex-grow mt-10 mb-0 flex flex-col">
           <div className="border-gray-200 border-2 rounded flex flex-col bg-white">
             <div className="rounded ml-7 my-6 mr-[28px]">
-              <form onSubmit={createUser}>
+              <form onSubmit={formik.handleSubmit}>
                 <div className="w-full flex">
                   <div className="fname-lname-label-input-container w-1/2 pr-3 py-2">
                     <label className="py-2">
                       First Name&nbsp;<span class="required">*</span>
                     </label>
                     <Input
+                      name="firstName"
                       type="text"
-                      value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
-                      invalid={errors?.firstName}
+                      className={
+                        'form-control' +
+                        (formik.errors.firstName && formik.touched.firstName ? ' is-invalid' : '')
+                      }
+                      onChange={formik.handleChange}
+                      value={formik.values.firstName}
                     />
 
-                    <FormFeedback class="invalid-feedback">{errors?.firstName}</FormFeedback>
+                    <FormFeedback className="invalid-feedback">
+                      {formik.errors.firstName && formik.touched.firstName
+                        ? formik.errors.firstName
+                        : null}
+                    </FormFeedback>
                   </div>
                   <div className="fname-lname-label-input-container w-1/2 pr-3 py-2">
                     {' '}
@@ -141,27 +107,40 @@ export const Add = () => {
                       Last Name&nbsp;<span class="required">*</span>
                     </label>
                     <Input
+                      name="lastName"
                       type="text"
-                      value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
-                      className="invalid-input"
-                      invalid={errors?.lastName}
+                      className={
+                        'form-control' +
+                        (formik.errors.lastName && formik.touched.lastName ? ' is-invalid' : '')
+                      }
+                      onChange={formik.handleChange}
+                      value={formik.values.lastName}
                     />
-                    <FormFeedback class="invalid-feedback">{errors?.lastName}</FormFeedback>
+                    <FormFeedback className="invalid-feedback">
+                      {formik.errors.lastName && formik.touched.lastName
+                        ? formik.errors.lastName
+                        : null}
+                    </FormFeedback>
                   </div>
                 </div>
+
                 <div className="fname-lname-label-input-container width-100 padding-right-10">
                   <label className="py-2">
                     Email Address&nbsp;<span class="required">*</span>
                   </label>
                   <Input
+                    name="email"
                     type="text"
-                    value={emailAddress}
-                    onChange={(e) => setEmailAddress(e.target.value)}
-                    className="invalid-input"
-                    invalid={errors?.emailAddress}
+                    className={
+                      'form-control' +
+                      (formik.errors.email && formik.touched.email ? ' is-invalid' : '')
+                    }
+                    onChange={formik.handleChange}
+                    value={formik.values.email}
                   />
-                  <FormFeedback class="invalid-feedback">{errors?.emailAddress}</FormFeedback>
+                  <FormFeedback className="invalid-feedback">
+                    {formik.errors.email && formik.touched.email ? formik.errors.email : null}
+                  </FormFeedback>
                 </div>
                 <div className="flex flex-col pb-2">
                   <label className="py-2">
@@ -173,8 +152,8 @@ export const Add = () => {
                       return (
                         <Button
                           key={button.id}
-                          onClick={(e) => setGenderFromButton(e, button.id)}
-                          active={isActiveGender === button.id}
+                          onClick={() => formik.setFieldValue('gender', button.name.toLowerCase())}
+                          active={formik.values.gender === button.name.toLowerCase()}
                         >
                           {button.name}
                         </Button>
@@ -185,19 +164,27 @@ export const Add = () => {
                 <div className="fname-lname-label-input-container width-100 pr-3 pb-2">
                   <label className="py-2">Address</label>
                   <textarea
+                    name="address"
                     type="text"
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    className="h-16 rounded-md adduser-address"
+                    className={
+                      'form-control' +
+                      (formik.errors.address && formik.touched.address ? ' is-invalid' : '')
+                    }
+                    onChange={formik.handleChange}
+                    value={formik.values.address}
                   />
                 </div>
                 <div className="fname-lname-label-input-container width-100 pr-3 pb-2">
                   <label className="py-2">Note</label>
                   <textarea
+                    name="note"
                     type="text"
-                    value={note}
-                    onChange={(e) => setNote(e.target.value)}
-                    className="h-16 rounded-md adduser-address"
+                    className={
+                      'form-control' +
+                      (formik.errors.note && formik.touched.note ? ' is-invalid' : '')
+                    }
+                    onChange={formik.handleChange}
+                    value={formik.values.note}
                   />
                 </div>
                 <div className="fname-lname-label-input-container width-100 pr-10 pb-2">
@@ -208,8 +195,8 @@ export const Add = () => {
                     {statusButtonNames.map((button) => (
                       <Button
                         key={button.id}
-                        onClick={(e) => setStatusFromButton(e, button.id)}
-                        active={isActiveStatus === button.id}
+                        onClick={() => formik.setFieldValue('status', button.name.toLowerCase())}
+                        active={formik.values.status === button.name.toLowerCase()}
                       >
                         {button.name}
                       </Button>

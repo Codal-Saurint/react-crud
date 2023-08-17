@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { getAge } from '../utils/modules';
+import { getAge } from '../../utils/modules';
 import * as faker from '@faker-js/faker';
 import { useFormik } from 'formik';
 import * as yup from 'yup';

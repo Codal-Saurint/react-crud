@@ -5,7 +5,7 @@ import { Pagination } from '../../components/shared/Pagination';
 import * as faker from '@faker-js/faker';
 import { formattedDate } from '../../utils/modules';
 
-export const Users = () => {
+export const List = () => {
   const [userData, setUserData] = useState([]);
   const [authenticated, setAuthenticated] = useState(null);
   const navigate = useNavigate();

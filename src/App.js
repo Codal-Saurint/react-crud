@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { Routes, Route } from 'react-router-dom';
-import { Login } from './pages/Login';
-import { Users } from './pages/users/Users';
+import { Login } from './pages/login/Login';
+import { List } from './pages/users/List';
 import { Add } from './pages/users/Add';
-import { Register } from './pages/Register';
+import { Register } from './pages/register/Register';
 import { Dashboard } from './pages/dashboard/Dashboard';
 import { Edit } from './pages/users/Edit';
 import { View } from './pages/users/View';
@@ -23,7 +23,7 @@ function App() {
         </Route>
 
         <Route path="/" element={<AuthLayout />}>
-          <Route path="users" element={<Users />} />
+          <Route path="users" element={<List />} />
           <Route path="users/add" element={<Add />} />
           <Route path="users/edit" element={<Edit />} />
           <Route path="users/view" element={<View />} />

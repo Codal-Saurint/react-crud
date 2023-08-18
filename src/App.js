@@ -11,6 +11,8 @@ import { Footer } from './layouts/Footer';
 import { AuthLayout } from './layouts/AuthLayout';
 import { NonAuthLayout } from './layouts/NonAuthLayout';
 
+
+
 function App() {
   return (
     <React.Fragment>

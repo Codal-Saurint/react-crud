@@ -72,7 +72,6 @@ export const AddEdit = () => {
           ...data
         });
         localStorage.setItem('STUSERS', JSON.stringify(tempUsers));
-        console.log('ss', tempUsers);
         navigate('/users');
       }
     }

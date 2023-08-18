@@ -62,7 +62,7 @@ export const AddEdit = () => {
           const tempArray = RandomUser(10);
           const tempUser = getRandomUserfromArray(tempArray);
           setUser(tempUser);
-          localStorage.setItem('STUSERS', JSON.stringify(tempUser));
+          localStorage.setItem('STUSERS', JSON.stringify([tempUser]));
         }
       } else {
         const tempUsers = JSON.parse(localStorage.getItem('STUSERS'));
@@ -95,15 +95,9 @@ export const AddEdit = () => {
   });
 
   const addRandomData = () => {
-    let tempUsers = JSON.parse(localStorage.getItem('STUSERS') || '[]');
-    if (tempUsers.length > 0) {
-      const tempUser = getRandomUserfromArray(tempUsers);
-      setUser(tempUser);
-    } else {
-      const tempArray = RandomUser(10);
-      const tempUser = getRandomUserfromArray(tempArray);
-      setUser(tempUser);
-    }
+    const tempArray = RandomUser(10);
+    const tempUser = getRandomUserfromArray(tempArray);
+    setUser(tempUser);
   };
 
   return (

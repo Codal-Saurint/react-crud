@@ -6,10 +6,12 @@ import * as faker from '@faker-js/faker';
 import { formattedDate } from '../../modules/helper';
 import { actionsArray, filterPageArray } from '../../data/constants';
 import { capitalize } from '../../modules/helper';
+import { Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 
 export const List = () => {
   const [userData, setUserData] = useState([]);
   const [authenticated, setAuthenticated] = useState(null);
+  const [deleteModal, setDeleteModal] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -67,6 +69,46 @@ export const List = () => {
 
   const navigateToAddUser = () => {
     navigate('/users/add');
+  };
+
+  const toggleModal = () => {
+    setDeleteModal(!deleteModal);
+  };
+  const closeBtn = () => {
+    <button className="close" onClick={toggleModal} type="button">
+      &times;
+    </button>;
+  };
+
+  const DeleteConfirmation = (id) => {
+    const deleteOperation = (id, e) => {
+      setDeleteModal(!deleteModal);
+      // e.preventDefault();
+      // if (id) {
+      //   const tempUsers = JSON.parse(localStorage.getItem('STUSERS'));
+      //   const userList = tempUsers.filter((element) => element.id !== id);
+      //   setUserData(userList);
+      //   localStorage.setItem('STUSERS', JSON.stringify(userList));
+      // }
+    };
+    return (
+      <Modal isOpen={true} toggle={setDeleteModal(!deleteModal)}>
+        <ModalHeader toggle={toggleModal} close={closeBtn}>
+          Are you sure you want to delete?
+        </ModalHeader>
+        <ModalBody>
+          This will delete the selected data and you won't be able to revert this change back.
+        </ModalBody>
+        <ModalFooter>
+          <Button color="danger" onClick={deleteOperation(id)}>
+            Confirm
+          </Button>{' '}
+          <Button color="secondary" onClick={toggleModal}>
+            Cancel
+          </Button>
+        </ModalFooter>
+      </Modal>
+    );
   };
   return (
     <div className="flex flex-col min-h-screen">
@@ -183,7 +225,10 @@ export const List = () => {
                           <Link to={`view/${data.id}`} className="btn btn-outline-dark btn-sm">
                             <i class="fa fa-eye"></i>
                           </Link>
-                          <Link className="btn btn-outline-dark btn-sm">
+                          <Link
+                            onClick={() => DeleteConfirmation(data?.id)}
+                            className="btn btn-outline-dark btn-sm"
+                          >
                             <i class="fa fa-trash"></i>
                           </Link>
                         </td>

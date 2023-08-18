@@ -35,7 +35,6 @@ export const View = () => {
   const navigateToEdit = () => {
     navigate(`/users/edit/${id}`);
   };
-  console.log('user', user);
   return (
     <div className="flex flex-col min-h-screen">
       <div className="flex-grow rounded-md bg-gray-50 px-[100px] pb-5 min-h-screen flex flex-col">
@@ -49,7 +48,7 @@ export const View = () => {
         <div className="mt-4 mb-0 font-bold flex justify-between">
           <h1 className="text-4xl">Users</h1>
           <Button onClick={backToList}>
-            <i class="fa fa-arrow-left fa-xs" style={{ paddingRight: '10px' }}></i>
+            <i className="fa fa-arrow-left fa-xs" style={{ paddingRight: '10px' }}></i>
             Back to List
           </Button>
         </div>
@@ -70,10 +69,10 @@ export const View = () => {
                     <td colSpan="2">
                       <span className="flex w-1/5 justify-between">
                         <button onClick={navigateToEdit} className="btn btn-outline-secondary">
-                          <i class="fa fa-pencil fa-xs me-2"></i>Edit
+                          <i className="fa fa-pencil fa-xs me-2"></i>Edit
                         </button>
                         <button className="btn btn-outline-danger btn-sm">
-                          <i class="fa fa-trash me-2"></i>Delete
+                          <i className="fa fa-trash me-2"></i>Delete
                         </button>
                       </span>
                     </td>

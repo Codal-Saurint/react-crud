@@ -43,7 +43,7 @@ export const Header = () => {
               className="text-black bg-cyan-500 h-10 px-3 mt-3 rounded"
               onClick={handleLogout}
             >
-              <i class="fa fa-power-off me-2"></i>Logout
+              <i className="fa fa-power-off me-2"></i>Logout
             </button>
           </div>
         )}

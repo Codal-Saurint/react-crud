@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { getAge } from '../../modules/helper';
 import * as faker from '@faker-js/faker';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
+import { RandomUser } from '../../components/shared/RandomUser';
 
 export const Login = () => {
   const [email, setEmail] = useState('');
@@ -20,7 +20,7 @@ export const Login = () => {
       setAuthenticated(true);
       localStorage.setItem('authenticated', true);
       navigate('/dashboard');
-      const tempUsers = profile(15);
+      const tempUsers = RandomUser(10);
       localStorage.setItem('STUSERS', JSON.stringify(tempUsers));
     } else {
       alert('Invalid credentials. Please try again.');
@@ -35,33 +35,6 @@ export const Login = () => {
       .required('Email Address field is empty')
       .email('You have entered invalid email format')
   });
-
-  function get_random_status(list) {
-    return list[Math.floor(Math.random() * list.length)];
-  }
-  function randomProfile() {
-    return {
-      address: faker.faker.location.streetAddress() + faker.faker.phone.number(),
-      age: getAge(faker.faker.date.birthdate()),
-      createdAt: faker.faker.date.past(),
-      email: faker.faker.internet.email(),
-      firstName: faker.faker.person.firstName(),
-      gender: faker.faker.person.sexType(),
-      id: faker.faker.datatype.uuid(),
-      lastName: faker.faker.person.lastName(),
-      note: faker.faker.person.bio(),
-      status: get_random_status(['Active', 'Inactive']),
-      updatedAt: new Date().toJSON()
-    };
-  }
-
-  const profile = function (max_size) {
-    const users = [];
-    for (let index = 0; index < max_size; index++) {
-      users.push(randomProfile());
-    }
-    return users;
-  };
 
   useEffect(() => {
     setEmail('sthakkar@codal.com');
@@ -106,10 +79,10 @@ export const Login = () => {
             <div>
               <button type="submit" className="bg-blue-700 text-white w-full h-9 rounded-md mb-2">
                 Login
-                <i class="fa fa-arrow-right w-1 ms-3"></i>
+                <i className="fa fa-arrow-right w-1 ms-3"></i>
               </button>
               <div>
-                Don't have an account?{' '}
+                Don't have an account?
                 <Link to="/register" className="text-blue-700 underline">
                   Sign Up
                 </Link>

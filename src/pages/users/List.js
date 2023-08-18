@@ -3,16 +3,19 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Button, Input, Table } from 'reactstrap';
 import { Pagination } from '../../components/shared/Pagination';
 import * as faker from '@faker-js/faker';
-import { formattedDate } from '../../modules/helper';
+import { formattedDate, getAge, get_random_status } from '../../modules/helper';
 import { actionsArray, filterPageArray } from '../../data/constants';
 import { capitalize } from '../../modules/helper';
 import { Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
+import { RandomUser } from '../../components/shared/RandomUser';
 
 export const List = () => {
   const [userData, setUserData] = useState([]);
   const [authenticated, setAuthenticated] = useState(null);
   const [deleteModal, setDeleteModal] = useState(false);
   const navigate = useNavigate();
+  const [selectedId, setSelectedId] = useState(null);
+  const [localStorageChanged, setLocalStorageChanged] = useState(false);
 
   useEffect(() => {
     const loggedInUser = localStorage.getItem('authenticated');
@@ -32,8 +35,9 @@ export const List = () => {
     navigate('/login');
   };
 
-  const deleteUser = () => {
-    alert('Hello');
+  const handleOpenModal = (itemId) => {
+    setSelectedId(itemId);
+    setDeleteModal(true);
   };
 
   const navigateToViewUser = () => {
@@ -42,73 +46,24 @@ export const List = () => {
   const navigateToEditUser = () => {
     navigate('/users/edit');
   };
-  const ButtonContainer = ({ id }) => (
-    <span className="flex items-center">
-      <button
-        type="button"
-        className="btn btn-outline-dark btn-sm flex items-center justify-center p-0 w-6 h-6"
-        onClick={navigateToViewUser}
-      >
-        <i class="fa fa-eye"></i>
-      </button>
-      <button
-        type="button"
-        className="btn btn-outline-dark btn-sm flex items-center justify-center p-0 w-6 h-6"
-        onClick={navigateToEditUser}
-      >
-        <i class="fa fa-pencil"></i>
-      </button>
-      <button
-        type="button"
-        className="btn btn-outline-danger btn-sm flex items-center justify-center p-0 w-6 h-6"
-      >
-        <i class="fa fa-trash"></i>
-      </button>
-    </span>
-  );
 
   const navigateToAddUser = () => {
     navigate('/users/add');
   };
 
-  const toggleModal = () => {
-    setDeleteModal(!deleteModal);
-  };
-  const closeBtn = () => {
-    <button className="close" onClick={toggleModal} type="button">
-      &times;
-    </button>;
+  const deleteConfirmation = (id) => {
+    if (id) {
+      const tempUsers = JSON.parse(localStorage.getItem('STUSERS'));
+      const userList = tempUsers.filter((element) => element.id !== id);
+      setUserData(userList);
+      localStorage.setItem('STUSERS', JSON.stringify(userList));
+      setDeleteModal(!deleteModal);
+    }
   };
 
-  const DeleteConfirmation = (id) => {
-    const deleteOperation = (id, e) => {
-      setDeleteModal(!deleteModal);
-      // e.preventDefault();
-      // if (id) {
-      //   const tempUsers = JSON.parse(localStorage.getItem('STUSERS'));
-      //   const userList = tempUsers.filter((element) => element.id !== id);
-      //   setUserData(userList);
-      //   localStorage.setItem('STUSERS', JSON.stringify(userList));
-      // }
-    };
-    return (
-      <Modal isOpen={true} toggle={setDeleteModal(!deleteModal)}>
-        <ModalHeader toggle={toggleModal} close={closeBtn}>
-          Are you sure you want to delete?
-        </ModalHeader>
-        <ModalBody>
-          This will delete the selected data and you won't be able to revert this change back.
-        </ModalBody>
-        <ModalFooter>
-          <Button color="danger" onClick={deleteOperation(id)}>
-            Confirm
-          </Button>{' '}
-          <Button color="secondary" onClick={toggleModal}>
-            Cancel
-          </Button>
-        </ModalFooter>
-      </Modal>
-    );
+  const addRandomUsers = (max_size) => {
+    const tempUsers = RandomUser(max_size);
+    setUserData(tempUsers);
   };
   return (
     <div className="flex flex-col min-h-screen">
@@ -123,20 +78,40 @@ export const List = () => {
         <div className="mt-4 mb-0 font-bold">
           <div className="flex justify-between py-3">
             <div className="flex flex-grow justify-between">
+              <Modal isOpen={deleteModal} toggle={() => setDeleteModal(!deleteModal)}>
+                <ModalHeader
+                  toggle={() => setDeleteModal(!deleteModal)}
+                  close={() => setDeleteModal(!deleteModal)}
+                >
+                  Are you sure you want to delete?
+                </ModalHeader>
+                <ModalBody>
+                  This will delete the selected data and you won't be able to revert this change
+                  back.
+                </ModalBody>
+                <ModalFooter>
+                  <Button color="danger" onClick={() => deleteConfirmation(selectedId)}>
+                    Confirm
+                  </Button>
+                  <Button color="secondary" onClick={() => setDeleteModal(!deleteModal)}>
+                    Cancel
+                  </Button>
+                </ModalFooter>
+              </Modal>
               <h1 className="text-4xl w-2/5">Users</h1>
               <div className="">
                 <Button onClick={navigateToAddUser} className="my-2 mx-1">
                   + Add a User
                 </Button>
-                <Button className="my-2 mx-1" outline>
-                  <i class="fa fa-xs me-2 fa-random"></i>
+                <Button className="my-2 mx-1" outline onClick={() => addRandomUsers(100)}>
+                  <i className="fa fa-xs me-2 fa-random"></i>
                   Add Random Users
                 </Button>
                 <Button className="my-2 mx-1" outline>
-                  <i class="fa fa-filter fa-xs me-2"></i>Reset Filter
+                  <i className="fa fa-filter fa-xs me-2"></i>Reset Filter
                 </Button>
                 <Button className="my-2 mx-1" color="danger" outline>
-                  <i class="fa fa-trash me-2"></i>Delete All Users
+                  <i className="fa fa-trash me-2"></i>Delete All Users
                 </Button>
               </div>
             </div>
@@ -147,7 +122,7 @@ export const List = () => {
             <div className="rounded mx-3 my-6 flex min-h-max flex-col">
               <div className="flex justify-between h-20 mt-3">
                 <div className="w-1/2 flex">
-                  Show{' '}
+                  Show
                   <span>
                     <Input bsSize="sm" className="mb-3 ml-3" type="select">
                       <option>10</option>
@@ -161,7 +136,7 @@ export const List = () => {
                 </div>
                 <div className="w-1/3 flex justify-end">
                   <label className="mr-3 mt-2">
-                    <i class="fa fa-search"></i>
+                    <i className="fa fa-search"></i>
                   </label>
                   <Input className="h-2/4 !w-3/5" />
                 </div>
@@ -218,18 +193,24 @@ export const List = () => {
                         <td>{formattedDate(data?.createdAt)}</td>
                         <td>{capitalize(data?.status)}</td>
 
-                        <td>
-                          <Link to={`edit/${data.id}`} className="btn btn-outline-dark btn-sm">
-                            <i class="fa fa-pencil"></i>
-                          </Link>
-                          <Link to={`view/${data.id}`} className="btn btn-outline-dark btn-sm">
-                            <i class="fa fa-eye"></i>
+                        <td className="flex items-center w-full">
+                          <Link
+                            to={`edit/${data.id}`}
+                            className="btn btn-outline-dark flex items-center justify-center p-0 w-6 h-6"
+                          >
+                            <i className="fa fa-pencil"></i>
                           </Link>
                           <Link
-                            onClick={() => DeleteConfirmation(data?.id)}
-                            className="btn btn-outline-dark btn-sm"
+                            to={`view/${data.id}`}
+                            className="btn btn-outline-dark btn-sm flex items-center justify-center p-0 w-6 h-6"
                           >
-                            <i class="fa fa-trash"></i>
+                            <i className="fa fa-eye"></i>
+                          </Link>
+                          <Link
+                            onClick={() => handleOpenModal(data?.id)}
+                            className="btn btn-outline-danger btn-sm flex items-center justify-center p-0 w-6 h-6"
+                          >
+                            <i className="fa fa-trash"></i>
                           </Link>
                         </td>
                       </tr>

@@ -2,7 +2,7 @@ export const Label = ({ required, children }) => {
   if (required) {
     return (
       <label className="py-2">
-        {children}&nbsp;<span className="required">*</span>
+        {children}&nbsp;<span className="text-red-500">*</span>
       </label>
     );
   }

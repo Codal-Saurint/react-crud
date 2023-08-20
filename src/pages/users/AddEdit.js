@@ -122,7 +122,7 @@ export const AddEdit = () => {
             <div className="rounded ml-7 my-6 mr-[28px]">
               <form onSubmit={formik.handleSubmit}>
                 <div className="w-full flex">
-                  <div className="fname-lname-label-input-container w-1/2 pr-3 py-2">
+                  <div className="flex flex-col w-1/2 pr-3 py-2">
                     <Label required>First Name</Label>
                     <Input
                       name="firstName"
@@ -135,13 +135,13 @@ export const AddEdit = () => {
                       value={formik.values.firstName}
                     />
 
-                    <FormFeedback className="invalid-feedback">
+                    <FormFeedback>
                       {formik.errors.firstName && formik.touched.firstName
                         ? formik.errors.firstName
                         : null}
                     </FormFeedback>
                   </div>
-                  <div className="fname-lname-label-input-container w-1/2 pr-3 py-2">
+                  <div className="flex flex-col w-1/2 pr-3 py-2">
                     <Label required>Last Name</Label>
 
                     <Input
@@ -154,7 +154,7 @@ export const AddEdit = () => {
                       onChange={formik.handleChange}
                       value={formik.values.lastName}
                     />
-                    <FormFeedback className="invalid-feedback">
+                    <FormFeedback>
                       {formik.errors.lastName && formik.touched.lastName
                         ? formik.errors.lastName
                         : null}
@@ -162,7 +162,7 @@ export const AddEdit = () => {
                   </div>
                 </div>
 
-                <div className="fname-lname-label-input-container width-100 padding-right-10">
+                <div className="flex flex-col w-full pr-2">
                   <Label required>Email</Label>
                   <Input
                     name="email"
@@ -174,7 +174,7 @@ export const AddEdit = () => {
                     onChange={formik.handleChange}
                     value={formik.values.email}
                   />
-                  <FormFeedback className="invalid-feedback">
+                  <FormFeedback>
                     {formik.errors.email && formik.touched.email ? formik.errors.email : null}
                   </FormFeedback>
                 </div>
@@ -182,12 +182,14 @@ export const AddEdit = () => {
                   <Label required>Gender</Label>
 
                   <div className="btn-group w-1/3">
-                    {genderButtonNames.map((button) => {
+                    {genderButtonNames.map((button, index) => {
                       return (
                         <Button
                           key={button.id}
                           onClick={() => formik.setFieldValue('gender', button.name.toLowerCase())}
                           active={formik.values.gender === button.name.toLowerCase()}
+                          outline
+                          color="secondary"
                         >
                           {capitalize(button.name)}
                         </Button>
@@ -195,7 +197,7 @@ export const AddEdit = () => {
                     })}
                   </div>
                 </div>
-                <div className="fname-lname-label-input-container width-100 pr-3 pb-2">
+                <div className="flex flex-col w-full pr-3 pb-2">
                   <Label>Address</Label>
                   <textarea
                     name="address"
@@ -208,7 +210,7 @@ export const AddEdit = () => {
                     value={formik.values.address}
                   />
                 </div>
-                <div className="fname-lname-label-input-container width-100 pr-3 pb-2">
+                <div className="flex flex-col w-full pr-3 pb-2">
                   <Label>Note</Label>
                   <textarea
                     name="note"
@@ -221,27 +223,27 @@ export const AddEdit = () => {
                     value={formik.values.note}
                   />
                 </div>
-                <div className="fname-lname-label-input-container width-100 pr-10 pb-2">
+                <div className="flex flex-col w-full pr-10 pb-2 mb-4">
                   <Label required>Status</Label>
-                  <div className="btn-group w-1/5">
+                  <div className="rounded-md w-1/5 btn-group">
                     {statusButtonNames.map((button) => (
                       <Button
                         key={button.id}
                         onClick={() => formik.setFieldValue('status', button.name)}
                         active={formik.values.status === button.name}
+                        outline
+                        color="secondary"
                       >
                         {capitalize(button.name)}
                       </Button>
                     ))}
                   </div>
                 </div>
-                <div className="submit-container">
-                  <Button type="submit">{id ? 'Update' : 'Add'}</Button>
-                  <Button
-                    className="btn btn-outline-secondary"
-                    type="button"
-                    onClick={() => addRandomData()}
-                  >
+                <div className="flex justify-between">
+                  <Button type="submit" color="primary" className="w-48">
+                    {id ? 'Update' : 'Add'}
+                  </Button>
+                  <Button outline onClick={() => addRandomData()} className="w-48">
                     <i className="fa fa-random" style={{ paddingRight: '10px' }}></i>
                     Random Data
                   </Button>

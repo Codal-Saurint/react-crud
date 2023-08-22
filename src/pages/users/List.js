@@ -1,12 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button, Input, Table } from 'reactstrap';
-import { Pagination } from '../../components/shared/Pagination';
 import * as faker from '@faker-js/faker';
 import { formattedDate, getAge, get_random_status } from '../../modules/helper';
 import { actionsArray, filterPageArray } from '../../data/constants';
 import { capitalize } from '../../modules/helper';
-import { Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
+import {
+  Modal,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  Pagination,
+  PaginationItem,
+  PaginationLink
+} from 'reactstrap';
 import { RandomUser } from '../../components/shared/RandomUser';
 
 export const List = () => {
@@ -16,6 +23,9 @@ export const List = () => {
   const navigate = useNavigate();
   const [selectedId, setSelectedId] = useState(null);
   const [localStorageChanged, setLocalStorageChanged] = useState(false);
+  const pageSize = 10;
+  const pagesToShow = 10;
+  const [currentPage, setCurrentPage] = useState(0);
 
   useEffect(() => {
     const loggedInUser = localStorage.getItem('authenticated');
@@ -28,7 +38,7 @@ export const List = () => {
     } else {
       navigate('/login');
     }
-  }, []);
+  }, [navigate, currentPage]);
 
   const handleLogout = () => {
     localStorage.clear();
@@ -38,13 +48,6 @@ export const List = () => {
   const handleOpenModal = (itemId) => {
     setSelectedId(itemId);
     setDeleteModal(true);
-  };
-
-  const navigateToViewUser = () => {
-    navigate('/users/view');
-  };
-  const navigateToEditUser = () => {
-    navigate('/users/edit');
   };
 
   const navigateToAddUser = () => {
@@ -64,6 +67,24 @@ export const List = () => {
   const addRandomUsers = (max_size) => {
     const tempUsers = RandomUser(max_size);
     setUserData(tempUsers);
+    const lcUsers = JSON.parse(localStorage.getItem('STUSERS'));
+    if (lcUsers) {
+      const updatedArray = [...lcUsers, ...tempUsers];
+      localStorage.setItem('STUSERS', JSON.stringify(updatedArray));
+    } else {
+      localStorage.setItem('STUSERS', JSON.stringify(tempUsers));
+    }
+  };
+
+  const pagesCount = Math.ceil(userData.length / pageSize);
+  console.log('SS', pagesCount);
+
+  const startPage = Math.max(currentPage - Math.floor(pagesToShow / 2), 0);
+  const endPage = Math.min(startPage + pagesToShow - 1, pagesCount - 1);
+
+  const handleClick = (e, index) => {
+    e.preventDefault();
+    setCurrentPage(index);
   };
   return (
     <div className="flex flex-col min-h-screen">
@@ -180,48 +201,101 @@ export const List = () => {
                       </td>
                       <td></td>
                     </tr>
-                    {userData.map((data) => (
-                      <tr key={data.userId}>
-                        <td>
-                          <Link>{data?.id}</Link>
-                        </td>
-                        <td>{data?.firstName}</td>
-                        <td>{data?.lastName}</td>
-                        <td>
-                          <Link to={`mailto:${data?.email}`}>{data?.email}</Link>
-                        </td>
-                        <td>{formattedDate(data?.createdAt)}</td>
-                        <td>{capitalize(data?.status)}</td>
+                    {userData
+                      .slice(currentPage * pageSize, (currentPage + 1) * pageSize)
+                      .map((data) => (
+                        <tr key={data.userId}>
+                          <td>
+                            <Link>{data?.id}</Link>
+                          </td>
+                          <td>{data?.firstName}</td>
+                          <td>{data?.lastName}</td>
+                          <td>
+                            <Link to={`mailto:${data?.email}`}>{data?.email}</Link>
+                          </td>
+                          <td>{formattedDate(data?.createdAt)}</td>
+                          <td>{capitalize(data?.status)}</td>
 
-                        <td className="flex items-center w-full">
-                          <Link
-                            to={`edit/${data.id}`}
-                            className="btn btn-outline-dark flex items-center justify-center p-0 w-6 h-6"
-                          >
-                            <i className="fa fa-pencil"></i>
-                          </Link>
-                          <Link
-                            to={`view/${data.id}`}
-                            className="btn btn-outline-dark btn-sm flex items-center justify-center p-0 w-6 h-6"
-                          >
-                            <i className="fa fa-eye"></i>
-                          </Link>
-                          <Link
-                            onClick={() => handleOpenModal(data?.id)}
-                            className="btn btn-outline-danger btn-sm flex items-center justify-center p-0 w-6 h-6"
-                          >
-                            <i className="fa fa-trash"></i>
-                          </Link>
-                        </td>
-                      </tr>
-                    ))}
+                          <td className="flex items-center w-full">
+                            <Link
+                              to={`edit/${data.id}`}
+                              className="btn btn-outline-dark flex items-center justify-center p-0 w-6 h-6"
+                            >
+                              <i className="fa fa-pencil"></i>
+                            </Link>
+                            <Link
+                              to={`view/${data.id}`}
+                              className="btn btn-outline-dark btn-sm flex items-center justify-center p-0 w-6 h-6"
+                            >
+                              <i className="fa fa-eye"></i>
+                            </Link>
+                            <Link
+                              onClick={() => handleOpenModal(data?.id)}
+                              className="btn btn-outline-danger btn-sm flex items-center justify-center p-0 w-6 h-6"
+                            >
+                              <i className="fa fa-trash"></i>
+                            </Link>
+                          </td>
+                        </tr>
+                      ))}
                   </tbody>
                 </Table>
               </div>
               <div className="flex justify-between">
-                <div>Showing 1 to 10 of 3001 entries</div>
+                <div>Showing 1 to 10 of {userData?.length} entries</div>
                 <div>
-                  <Pagination />
+                  <React.Fragment>
+                    <div className="pagination-wrapper">
+                      <Pagination aria-label="Page navigation example">
+                        <PaginationItem disabled={currentPage <= 0}>
+                          <PaginationLink
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setCurrentPage(0);
+                            }}
+                            first
+                            href="#"
+                          />
+                        </PaginationItem>
+                        <PaginationItem disabled={currentPage <= 0}>
+                          <PaginationLink
+                            onClick={(e) => handleClick(e, currentPage - 1)}
+                            previous
+                            href="#"
+                          />
+                        </PaginationItem>
+
+                        {Array.from(
+                          { length: endPage - startPage + 1 },
+                          (_, i) => startPage + i
+                        ).map((pageNumber) => (
+                          <PaginationItem key={pageNumber} active={pageNumber === currentPage}>
+                            <PaginationLink onClick={(e) => handleClick(e, pageNumber)}>
+                              {pageNumber + 1}
+                            </PaginationLink>
+                          </PaginationItem>
+                        ))}
+
+                        <PaginationItem disabled={currentPage >= pagesCount - 1}>
+                          <PaginationLink
+                            onClick={(e) => handleClick(e, currentPage + 1)}
+                            next
+                            href="#"
+                          />
+                        </PaginationItem>
+                        <PaginationItem disabled={currentPage >= pagesCount - 1}>
+                          <PaginationLink
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setCurrentPage(pagesCount - 1);
+                            }}
+                            last
+                            href="#"
+                          />
+                        </PaginationItem>
+                      </Pagination>
+                    </div>
+                  </React.Fragment>
                 </div>
               </div>
             </div>

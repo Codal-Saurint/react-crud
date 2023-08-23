@@ -20,12 +20,16 @@ export const List = () => {
   const [userData, setUserData] = useState([]);
   const [authenticated, setAuthenticated] = useState(null);
   const [deleteModal, setDeleteModal] = useState(false);
+  const [deleteAllUsersModal, setDeleteAllUsersModal] = useState(false);
   const navigate = useNavigate();
   const [selectedId, setSelectedId] = useState(null);
   const [localStorageChanged, setLocalStorageChanged] = useState(false);
   const pageSize = 10;
   const pagesToShow = 10;
   const [currentPage, setCurrentPage] = useState(0);
+  const [searchInput, setSearchInput] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [filteredData, setFilteredData] = useState(null);
 
   useEffect(() => {
     const loggedInUser = localStorage.getItem('authenticated');
@@ -76,16 +80,58 @@ export const List = () => {
     }
   };
 
-  const pagesCount = Math.ceil(userData.length / pageSize);
-  console.log('SS', pagesCount);
-
-  const startPage = Math.max(currentPage - Math.floor(pagesToShow / 2), 0);
-  const endPage = Math.min(startPage + pagesToShow - 1, pagesCount - 1);
-
   const handleClick = (e, index) => {
     e.preventDefault();
     setCurrentPage(index);
   };
+
+  const handleColumnSearch = (e) => {
+    const inputValue = e.target.value;
+    const type = e.target.name;
+    //console.log(':::', inputValue, type);
+    setSearchInput(inputValue);
+
+    filterData(searchInput, type);
+  };
+
+  const filterData = (input, type) => {
+    if (input !== '') {
+      const tempArray = JSON.parse(localStorage.getItem('STUSERS') || '[]');
+      const filteredData = tempArray.filter((item) => {
+        const value = item[type].toLowerCase();
+        return value.includes(input.toLowerCase());
+      });
+      setUserData(filteredData);
+    } else {
+      setUserData(userData);
+    }
+  };
+
+  const filteredUserData = React.useMemo(() => {
+    let tempUserData = filteredData !== null ? filteredData : userData;
+
+    if (statusFilter === 'active') {
+      tempUserData = tempUserData.filter((obj) => obj.status === statusFilter);
+    } else if (statusFilter === 'inactive') {
+      tempUserData = tempUserData.filter((obj) => obj.status === statusFilter);
+    } else {
+    }
+
+    console.log('temp', tempUserData.slice((currentPage * pageSize, (currentPage + 1) * pageSize)));
+
+    return tempUserData.slice((currentPage * pageSize, (currentPage + 1) * pageSize));
+  }, [userData, filteredData, currentPage, statusFilter]);
+
+  const pageNumbers = [];
+
+  for (let i = 1; i <= Math.ceil(filteredUserData / pageSize); i++) {
+    pageNumbers.push(i);
+  }
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+  console.log('YO', filteredUserData);
+
   return (
     <div className="flex flex-col min-h-screen">
       <div className="flex-grow rounded-md bg-gray-50 px-[100px] pb-10 min-h-screen flex flex-col">
@@ -119,6 +165,36 @@ export const List = () => {
                   </Button>
                 </ModalFooter>
               </Modal>
+              <Modal isOpen={deleteAllUsersModal} toggle={() => setDeleteModal(!deleteModal)}>
+                <ModalHeader
+                  toggle={() => setDeleteModal(!deleteModal)}
+                  close={() => setDeleteModal(!deleteModal)}
+                >
+                  Are you sure you want to delete?
+                </ModalHeader>
+                <ModalBody>
+                  This will delete all data in table and you won't be able to revert this change
+                  back.
+                </ModalBody>
+                <ModalFooter>
+                  <Button
+                    color="danger"
+                    onClick={() => {
+                      setUserData([]);
+                      localStorage.setItem('STUSERS', JSON.stringify(''));
+                      setDeleteAllUsersModal(!deleteAllUsersModal);
+                    }}
+                  >
+                    Confirm
+                  </Button>
+                  <Button
+                    color="secondary"
+                    onClick={() => setDeleteAllUsersModal(!deleteAllUsersModal)}
+                  >
+                    Cancel
+                  </Button>
+                </ModalFooter>
+              </Modal>
               <h1 className="text-4xl w-2/5">Users</h1>
               <div className="">
                 <Button onClick={navigateToAddUser} className="my-2 mx-1">
@@ -131,7 +207,14 @@ export const List = () => {
                 <Button className="my-2 mx-1" outline>
                   <i className="fa fa-filter fa-xs me-2"></i>Reset Filter
                 </Button>
-                <Button className="my-2 mx-1" color="danger" outline>
+                <Button
+                  className="my-2 mx-1"
+                  color="danger"
+                  outline
+                  onClick={() => {
+                    setDeleteAllUsersModal(!deleteAllUsersModal);
+                  }}
+                >
                   <i className="fa fa-trash me-2"></i>Delete All Users
                 </Button>
               </div>
@@ -178,22 +261,42 @@ export const List = () => {
                   <tbody>
                     <tr>
                       <td>
-                        <Input />
+                        <Input type="search" onChange={(e) => handleColumnSearch(e)} name="id" />
                       </td>
                       <td>
-                        <Input />
+                        <Input
+                          type="search"
+                          onChange={(e) => handleColumnSearch(e)}
+                          name="firstName"
+                        />
                       </td>
                       <td>
-                        <Input />
+                        <Input
+                          type="search"
+                          onChange={(e) => handleColumnSearch(e)}
+                          name="lastName"
+                        />
                       </td>
                       <td>
-                        <Input />
+                        <Input type="search" onChange={(e) => handleColumnSearch(e)} name="email" />
                       </td>
                       <td>
-                        <Input />
+                        <Input
+                          type="search"
+                          onChange={(e) => handleColumnSearch(e)}
+                          name="createdAt"
+                        />
                       </td>
                       <td>
-                        <Input bsSize="sm" className="p-10" type="select">
+                        <Input
+                          bsSize="sm"
+                          className="p-10"
+                          type="select"
+                          onChange={(e) => {
+                            setStatusFilter(e.target.value.toLowerCase());
+                            setCurrentPage(0);
+                          }}
+                        >
                           <option>All</option>
                           <option>Active</option>
                           <option>Inactive</option>
@@ -201,9 +304,9 @@ export const List = () => {
                       </td>
                       <td></td>
                     </tr>
-                    {userData
-                      .slice(currentPage * pageSize, (currentPage + 1) * pageSize)
-                      .map((data) => (
+                    {console.log('FFF', filteredUserData)}
+                    {filteredUserData.length > 0 ? (
+                      filteredUserData.map((data) => (
                         <tr key={data.userId}>
                           <td>
                             <Link>{data?.id}</Link>
@@ -237,65 +340,34 @@ export const List = () => {
                             </Link>
                           </td>
                         </tr>
-                      ))}
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={7} className="text-center">
+                          No results found.
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </Table>
               </div>
               <div className="flex justify-between">
-                <div>Showing 1 to 10 of {userData?.length} entries</div>
                 <div>
-                  <React.Fragment>
-                    <div className="pagination-wrapper">
-                      <Pagination aria-label="Page navigation example">
-                        <PaginationItem disabled={currentPage <= 0}>
-                          <PaginationLink
-                            onClick={(e) => {
-                              e.preventDefault();
-                              setCurrentPage(0);
-                            }}
-                            first
-                            href="#"
-                          />
-                        </PaginationItem>
-                        <PaginationItem disabled={currentPage <= 0}>
-                          <PaginationLink
-                            onClick={(e) => handleClick(e, currentPage - 1)}
-                            previous
-                            href="#"
-                          />
-                        </PaginationItem>
-
-                        {Array.from(
-                          { length: endPage - startPage + 1 },
-                          (_, i) => startPage + i
-                        ).map((pageNumber) => (
-                          <PaginationItem key={pageNumber} active={pageNumber === currentPage}>
-                            <PaginationLink onClick={(e) => handleClick(e, pageNumber)}>
-                              {pageNumber + 1}
-                            </PaginationLink>
-                          </PaginationItem>
-                        ))}
-
-                        <PaginationItem disabled={currentPage >= pagesCount - 1}>
-                          <PaginationLink
-                            onClick={(e) => handleClick(e, currentPage + 1)}
-                            next
-                            href="#"
-                          />
-                        </PaginationItem>
-                        <PaginationItem disabled={currentPage >= pagesCount - 1}>
-                          <PaginationLink
-                            onClick={(e) => {
-                              e.preventDefault();
-                              setCurrentPage(pagesCount - 1);
-                            }}
-                            last
-                            href="#"
-                          />
-                        </PaginationItem>
-                      </Pagination>
-                    </div>
-                  </React.Fragment>
+                  Showing {(currentPage + 1) * 10 + 1} to {(currentPage + 2) * 10} of{' '}
+                  {userData?.length} entries
+                </div>
+                <div>
+                  <nav>
+                    <ul className="pagination">
+                      {pageNumbers.map((number) => (
+                        <li key={number} className="page-item">
+                          <button onClick={() => paginate(number)} className="page-link">
+                            {number}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </nav>
                 </div>
               </div>
             </div>

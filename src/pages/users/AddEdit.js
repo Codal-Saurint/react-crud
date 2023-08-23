@@ -17,6 +17,7 @@ export const AddEdit = () => {
     firstName: '',
     lastName: '',
     email: '',
+    age: 0,
     gender: 'male',
     address: '',
     note: '',
@@ -38,7 +39,8 @@ export const AddEdit = () => {
   const validationSchema = yup.object().shape({
     firstName: yup.string().required(),
     lastName: yup.string().required(),
-    email: yup.string().required().email('You have entered invalid email format')
+    email: yup.string().required().email('You have entered invalid email format'),
+    age: yup.number().required().positive().integer()
   });
 
   const formik = useFormik({
@@ -48,6 +50,7 @@ export const AddEdit = () => {
     onSubmit: (data) => {
       if (id) {
         const tempUsers = JSON.parse(localStorage.getItem('STUSERS'));
+        console.log('MM', tempUsers);
         if (tempUsers) {
           const userIndex = tempUsers.findIndex((element) => element.id === id);
 
@@ -59,17 +62,20 @@ export const AddEdit = () => {
           }
           localStorage.setItem('STUSERS', JSON.stringify(tempUsers));
         } else {
-          const tempArray = RandomUser(10);
-          const tempUser = getRandomUserfromArray(tempArray);
-          setUser(tempUser);
-          localStorage.setItem('STUSERS', JSON.stringify([tempUser]));
+          if (data) {
+            localStorage.setItem('STUSERS', JSON.stringify([data]));
+          } else {
+            const tempArray = RandomUser(10);
+            const tempUser = getRandomUserfromArray(tempArray);
+            setUser(tempUser);
+            localStorage.setItem('STUSERS', JSON.stringify([tempUser]));
+          }
         }
       } else {
         const tempUsers = JSON.parse(localStorage.getItem('STUSERS'));
         const sampleDate = new Date('January 1, 2000 23:15:30 UTC').toJSON();
         if (tempUsers) {
           const newUser = {
-            age: getAge(sampleDate),
             createdAt: sampleDate,
             id: faker.faker.datatype.uuid(),
             updatedAt: new Date().toJSON(),
@@ -80,7 +86,6 @@ export const AddEdit = () => {
         } else {
           const tempUser = [
             {
-              age: getAge(sampleDate),
               createdAt: sampleDate,
               id: faker.faker.datatype.uuid(),
               updatedAt: new Date().toJSON(),
@@ -124,6 +129,7 @@ export const AddEdit = () => {
                 <div className="w-full flex">
                   <div className="flex flex-col w-1/2 pr-3 py-2">
                     <Label required>First Name</Label>
+
                     <Input
                       name="firstName"
                       type="text"
@@ -162,22 +168,41 @@ export const AddEdit = () => {
                   </div>
                 </div>
 
-                <div className="flex flex-col w-full pr-2">
-                  <Label required>Email</Label>
-                  <Input
-                    name="email"
-                    type="text"
-                    className={
-                      'form-control' +
-                      (formik.errors.email && formik.touched.email ? ' is-invalid' : '')
-                    }
-                    onChange={formik.handleChange}
-                    value={formik.values.email}
-                  />
-                  <FormFeedback>
-                    {formik.errors.email && formik.touched.email ? formik.errors.email : null}
-                  </FormFeedback>
+                <div className="w-full flex">
+                  <div className="flex flex-col w-1/2 pr-3 py-2">
+                    <Label required>Email</Label>
+                    <Input
+                      name="email"
+                      type="text"
+                      className={
+                        'form-control' +
+                        (formik.errors.email && formik.touched.email ? ' is-invalid' : '')
+                      }
+                      onChange={formik.handleChange}
+                      value={formik.values.email}
+                    />
+                    <FormFeedback>
+                      {formik.errors.email && formik.touched.email ? formik.errors.email : null}
+                    </FormFeedback>
+                  </div>
+                  <div className="flex flex-col w-1/2 pr-3 py-2">
+                    <Label required>Age</Label>
+                    <Input
+                      name="age"
+                      type="text"
+                      className={
+                        'form-control' +
+                        (formik.errors.age && formik.touched.age ? ' is-invalid' : '')
+                      }
+                      onChange={formik.handleChange}
+                      value={formik.values.age !== 0 ? formik.values.age : ''}
+                    />
+                    <FormFeedback>
+                      {formik.errors.age && formik.touched.age ? formik.errors.age : null}
+                    </FormFeedback>
+                  </div>
                 </div>
+
                 <div className="flex flex-col pb-2">
                   <Label required>Gender</Label>
 

@@ -108,7 +108,7 @@ export const List = () => {
   };
 
   const filteredUserData = React.useMemo(() => {
-    let tempUserData = filteredData !== null ? filteredData : userData;
+    let tempUserData = JSON.parse(localStorage.getItem('STUSERS') || '[]');
 
     if (statusFilter === 'active') {
       tempUserData = tempUserData.filter((obj) => obj.status === statusFilter);
@@ -117,20 +117,19 @@ export const List = () => {
     } else {
     }
 
-    console.log('temp', tempUserData.slice((currentPage * pageSize, (currentPage + 1) * pageSize)));
-
-    return tempUserData.slice((currentPage * pageSize, (currentPage + 1) * pageSize));
-  }, [userData, filteredData, currentPage, statusFilter]);
+    return tempUserData.slice(currentPage * pageSize, (currentPage + 1) * pageSize);
+  }, [currentPage, statusFilter]);
 
   const pageNumbers = [];
 
   for (let i = 1; i <= Math.ceil(filteredUserData / pageSize); i++) {
+    console.log('KK', filteredUserData, pageSize);
     pageNumbers.push(i);
   }
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-  console.log('YO', filteredUserData);
+  //console.log('YO', filteredUserData, pageNumbers);
 
   return (
     <div className="flex flex-col min-h-screen">

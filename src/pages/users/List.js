@@ -30,6 +30,7 @@ export const List = () => {
   const [searchInput, setSearchInput] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [filteredData, setFilteredData] = useState(null);
+  const [inputType, setInputType] = useState('');
 
   useEffect(() => {
     const loggedInUser = localStorage.getItem('authenticated');
@@ -88,27 +89,20 @@ export const List = () => {
   const handleColumnSearch = (e) => {
     const inputValue = e.target.value;
     const type = e.target.name;
-    //console.log(':::', inputValue, type);
     setSearchInput(inputValue);
-
-    filterData(searchInput, type);
-  };
-
-  const filterData = (input, type) => {
-    if (input !== '') {
-      const tempArray = JSON.parse(localStorage.getItem('STUSERS') || '[]');
-      const filteredData = tempArray.filter((item) => {
-        const value = item[type].toLowerCase();
-        return value.includes(input.toLowerCase());
-      });
-      setUserData(filteredData);
-    } else {
-      setUserData(userData);
-    }
+    setInputType(type);
+    console.log(':::', searchInput, inputType);
   };
 
   const filteredUserData = React.useMemo(() => {
     let tempUserData = JSON.parse(localStorage.getItem('STUSERS') || '[]');
+
+    if (searchInput) {
+      tempUserData = tempUserData.filter((item) => {
+        const value = item[inputType].toLowerCase();
+        return value.includes(searchInput.toLowerCase());
+      });
+    }
 
     if (statusFilter === 'active') {
       tempUserData = tempUserData.filter((obj) => obj.status === statusFilter);
@@ -116,20 +110,15 @@ export const List = () => {
       tempUserData = tempUserData.filter((obj) => obj.status === statusFilter);
     } else {
     }
-
-    return tempUserData.slice(currentPage * pageSize, (currentPage + 1) * pageSize);
-  }, [currentPage, statusFilter]);
+    return tempUserData;
+  }, [statusFilter, searchInput, inputType]);
 
   const pageNumbers = [];
 
-  for (let i = 1; i <= Math.ceil(filteredUserData / pageSize); i++) {
-    console.log('KK', filteredUserData, pageSize);
+  for (let i = 1; i <= Math.ceil(filteredUserData.length / pageSize); i++) {
     pageNumbers.push(i);
   }
-
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
-  //console.log('YO', filteredUserData, pageNumbers);
+  const paginate = (pageNumber) => setCurrentPage(pageNumber - 1);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -303,43 +292,48 @@ export const List = () => {
                       </td>
                       <td></td>
                     </tr>
-                    {console.log('FFF', filteredUserData)}
+                    {console.log(
+                      'FFF',
+                      filteredUserData.slice(currentPage * pageSize, (currentPage + 1) * pageSize)
+                    )}
                     {filteredUserData.length > 0 ? (
-                      filteredUserData.map((data) => (
-                        <tr key={data.userId}>
-                          <td>
-                            <Link>{data?.id}</Link>
-                          </td>
-                          <td>{data?.firstName}</td>
-                          <td>{data?.lastName}</td>
-                          <td>
-                            <Link to={`mailto:${data?.email}`}>{data?.email}</Link>
-                          </td>
-                          <td>{formattedDate(data?.createdAt)}</td>
-                          <td>{capitalize(data?.status)}</td>
+                      filteredUserData
+                        .slice(currentPage * pageSize, (currentPage + 1) * pageSize)
+                        .map((data) => (
+                          <tr key={data.userId}>
+                            <td>
+                              <Link>{data?.id}</Link>
+                            </td>
+                            <td>{data?.firstName}</td>
+                            <td>{data?.lastName}</td>
+                            <td>
+                              <Link to={`mailto:${data?.email}`}>{data?.email}</Link>
+                            </td>
+                            <td>{formattedDate(data?.createdAt)}</td>
+                            <td>{capitalize(data?.status)}</td>
 
-                          <td className="flex items-center w-full">
-                            <Link
-                              to={`edit/${data.id}`}
-                              className="btn btn-outline-dark flex items-center justify-center p-0 w-6 h-6"
-                            >
-                              <i className="fa fa-pencil"></i>
-                            </Link>
-                            <Link
-                              to={`view/${data.id}`}
-                              className="btn btn-outline-dark btn-sm flex items-center justify-center p-0 w-6 h-6"
-                            >
-                              <i className="fa fa-eye"></i>
-                            </Link>
-                            <Link
-                              onClick={() => handleOpenModal(data?.id)}
-                              className="btn btn-outline-danger btn-sm flex items-center justify-center p-0 w-6 h-6"
-                            >
-                              <i className="fa fa-trash"></i>
-                            </Link>
-                          </td>
-                        </tr>
-                      ))
+                            <td className="flex items-center w-full">
+                              <Link
+                                to={`edit/${data.id}`}
+                                className="btn btn-outline-dark flex items-center justify-center p-0 w-6 h-6"
+                              >
+                                <i className="fa fa-pencil"></i>
+                              </Link>
+                              <Link
+                                to={`view/${data.id}`}
+                                className="btn btn-outline-dark btn-sm flex items-center justify-center p-0 w-6 h-6"
+                              >
+                                <i className="fa fa-eye"></i>
+                              </Link>
+                              <Link
+                                onClick={() => handleOpenModal(data?.id)}
+                                className="btn btn-outline-danger btn-sm flex items-center justify-center p-0 w-6 h-6"
+                              >
+                                <i className="fa fa-trash"></i>
+                              </Link>
+                            </td>
+                          </tr>
+                        ))
                     ) : (
                       <tr>
                         <td colSpan={7} className="text-center">
@@ -352,21 +346,43 @@ export const List = () => {
               </div>
               <div className="flex justify-between">
                 <div>
-                  Showing {(currentPage + 1) * 10 + 1} to {(currentPage + 2) * 10} of{' '}
-                  {userData?.length} entries
+                  Showing {currentPage * pageSize + 1} to{' '}
+                  {Math.min((currentPage + 1) * pageSize, userData.length)} of{' '}
+                  {filteredUserData?.length} entries
                 </div>
                 <div>
-                  <nav>
-                    <ul className="pagination">
-                      {pageNumbers.map((number) => (
-                        <li key={number} className="page-item">
-                          <button onClick={() => paginate(number)} className="page-link">
-                            {number}
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  </nav>
+                  <Pagination>
+                    <PaginationItem>
+                      <PaginationLink first href="#" />
+                    </PaginationItem>
+                    <PaginationItem disabled={currentPage <= 0}>
+                      <PaginationLink
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setCurrentPage(currentPage - 1);
+                        }}
+                        previous
+                        href="#"
+                      />
+                    </PaginationItem>
+                    {pageNumbers.map((number) => (
+                      <PaginationItem key={number} active={number - 1 === currentPage}>
+                        <PaginationLink onClick={() => paginate(number)}>{number}</PaginationLink>
+                      </PaginationItem>
+                    ))}
+                    <PaginationLink
+                      disabled={currentPage >= filteredUserData - 1}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setCurrentPage(currentPage + 1);
+                      }}
+                      next
+                      href="#"
+                    />
+                    <PaginationItem>
+                      <PaginationLink href="#" last />
+                    </PaginationItem>
+                  </Pagination>
                 </div>
               </div>
             </div>

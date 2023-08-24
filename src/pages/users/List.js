@@ -4,7 +4,7 @@ import { Button, Input, Table } from 'reactstrap';
 import * as faker from '@faker-js/faker';
 import { formattedDate, getAge, get_random_status } from '../../modules/helper';
 import { actionsArray, filterPageArray } from '../../data/constants';
-import { capitalize } from '../../modules/helper';
+import { capitalize, removeHyphen, removeSpaceChangeCase } from '../../modules/helper';
 import {
   Modal,
   ModalHeader,
@@ -18,7 +18,6 @@ import { RandomUser } from '../../components/shared/RandomUser';
 
 export const List = () => {
   const [userData, setUserData] = useState([]);
-  const [authenticated, setAuthenticated] = useState(null);
   const [deleteModal, setDeleteModal] = useState(false);
   const [deleteAllUsersModal, setDeleteAllUsersModal] = useState(false);
   const navigate = useNavigate();
@@ -27,23 +26,12 @@ export const List = () => {
   const pageSize = 10;
   const pagesToShow = 10;
   const [currentPage, setCurrentPage] = useState(0);
-  const [searchInput, setSearchInput] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
-  const [filteredData, setFilteredData] = useState(null);
-  const [inputType, setInputType] = useState('');
-
-  useEffect(() => {
-    const loggedInUser = localStorage.getItem('authenticated');
-    const users_group = JSON.parse(localStorage.getItem('STUSERS') || '[]');
-    if (loggedInUser) {
-      setAuthenticated(loggedInUser);
-      if (users_group.length > 0) {
-        setUserData(users_group);
-      }
-    } else {
-      navigate('/login');
-    }
-  }, [navigate, currentPage]);
+  const [changedId, setChangedId] = useState('');
+  const [changedFirstName, setChangedFirstName] = useState('');
+  const [changedLastName, setChangedLastName] = useState('');
+  const [changedEmail, setChangedEmail] = useState('');
+  const [changedStatus, setChangedStatus] = useState('');
+  //const [statusFilter, setStatusFilter] = useState('');
 
   const handleLogout = () => {
     localStorage.clear();
@@ -81,44 +69,75 @@ export const List = () => {
     }
   };
 
-  const handleClick = (e, index) => {
-    e.preventDefault();
-    setCurrentPage(index);
+  const handleColumnSearch = (e, filterType) => {
+    console.log('LAST', e, filterType);
+    switch (filterType) {
+      case 'id':
+        setChangedId(e.target.value);
+        break;
+      case 'firstName':
+        setChangedFirstName(e.target.value);
+        break;
+      case 'lastName':
+        setChangedLastName(e.target.value);
+        break;
+      case 'email':
+        setChangedEmail(e.target.value);
+        break;
+      case 'status':
+        setChangedStatus(e.target.value);
+        break;
+      default:
+        break;
+    }
   };
 
-  const handleColumnSearch = (e) => {
-    const inputValue = e.target.value;
-    const type = e.target.name;
-    setSearchInput(inputValue);
-    setInputType(type);
-    console.log(':::', searchInput, inputType);
-  };
+  useEffect(() => {
+    const usersLC = JSON.parse(localStorage.getItem('STUSERS') || '[]');
 
-  const filteredUserData = React.useMemo(() => {
-    let tempUserData = JSON.parse(localStorage.getItem('STUSERS') || '[]');
+    if (usersLC.length > 0) {
+      let filteredData = usersLC;
+      if (changedId !== '') {
+        filteredData = filteredData.filter((item) =>
+          removeHyphen(item.id).toLowerCase().includes(changedId.toLowerCase())
+        );
+      }
+      if (changedFirstName !== '') {
+        filteredData = filteredData.filter((item) =>
+          removeHyphen(item.firstName).toLowerCase().includes(changedFirstName.toLowerCase())
+        );
+      }
 
-    if (searchInput) {
-      tempUserData = tempUserData.filter((item) => {
-        const value = item[inputType].toLowerCase();
-        return value.includes(searchInput.toLowerCase());
-      });
+      if (changedLastName !== '') {
+        filteredData = filteredData.filter((item) =>
+          removeHyphen(item.lastName).toLowerCase().includes(changedLastName.toLowerCase())
+        );
+      }
+
+      if (changedEmail !== '') {
+        filteredData = filteredData.filter((item) =>
+          removeHyphen(item.email).toLowerCase().includes(changedEmail.toLowerCase())
+        );
+      }
+      if (changedStatus !== '') {
+        let statusLowerCase = changedStatus.toLowerCase();
+        if (statusLowerCase !== 'all') {
+          filteredData = filteredData.filter((item) => item.status === statusLowerCase);
+        }
+      }
+      setUserData(filteredData);
     }
-
-    if (statusFilter === 'active') {
-      tempUserData = tempUserData.filter((obj) => obj.status === statusFilter);
-    } else if (statusFilter === 'inactive') {
-      tempUserData = tempUserData.filter((obj) => obj.status === statusFilter);
-    } else {
-    }
-    return tempUserData;
-  }, [statusFilter, searchInput, inputType]);
+  }, [changedId, changedFirstName, changedLastName, changedEmail, changedStatus]);
 
   const pageNumbers = [];
 
-  for (let i = 1; i <= Math.ceil(filteredUserData.length / pageSize); i++) {
+  for (let i = 1; i <= Math.ceil(userData.length / pageSize); i++) {
     pageNumbers.push(i);
   }
   const paginate = (pageNumber) => setCurrentPage(pageNumber - 1);
+  const pagesCount = Math.ceil(userData.length / pageSize);
+  const startPage = Math.max(currentPage - Math.floor(pagesToShow / 2), 0);
+  const endPage = Math.min(startPage + pagesToShow - 1, pagesCount - 1);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -226,11 +245,15 @@ export const List = () => {
                   </span>
                   &nbsp;&nbsp;&nbsp;&nbsp;entries
                 </div>
-                <div className="w-1/3 flex justify-end">
+                <div className="w-1/3 h-1/2 flex justify-end">
                   <label className="mr-3 mt-2">
                     <i className="fa fa-search"></i>
                   </label>
-                  <Input className="h-2/4 !w-3/5" />
+                  <Input
+                    type="search"
+                    onChange={(e) => handleColumnSearch(e)}
+                    name="globalSearch"
+                  />
                 </div>
               </div>
               <div>
@@ -249,29 +272,37 @@ export const List = () => {
                   <tbody>
                     <tr>
                       <td>
-                        <Input type="search" onChange={(e) => handleColumnSearch(e)} name="id" />
+                        <Input
+                          type="search"
+                          onChange={(e) => handleColumnSearch(e, 'id')}
+                          name="id"
+                        />
                       </td>
                       <td>
                         <Input
                           type="search"
-                          onChange={(e) => handleColumnSearch(e)}
+                          onChange={(e) => handleColumnSearch(e, 'firstName')}
                           name="firstName"
                         />
                       </td>
                       <td>
                         <Input
                           type="search"
-                          onChange={(e) => handleColumnSearch(e)}
+                          onChange={(e) => handleColumnSearch(e, 'lastName')}
                           name="lastName"
                         />
                       </td>
                       <td>
-                        <Input type="search" onChange={(e) => handleColumnSearch(e)} name="email" />
+                        <Input
+                          type="search"
+                          onChange={(e) => handleColumnSearch(e, 'email')}
+                          name="email"
+                        />
                       </td>
                       <td>
                         <Input
                           type="search"
-                          onChange={(e) => handleColumnSearch(e)}
+                          onChange={(e) => handleColumnSearch(e, 'search')}
                           name="createdAt"
                         />
                       </td>
@@ -281,8 +312,7 @@ export const List = () => {
                           className="p-10"
                           type="select"
                           onChange={(e) => {
-                            setStatusFilter(e.target.value.toLowerCase());
-                            setCurrentPage(0);
+                            handleColumnSearch(e, 'status');
                           }}
                         >
                           <option>All</option>
@@ -292,12 +322,9 @@ export const List = () => {
                       </td>
                       <td></td>
                     </tr>
-                    {console.log(
-                      'FFF',
-                      filteredUserData.slice(currentPage * pageSize, (currentPage + 1) * pageSize)
-                    )}
-                    {filteredUserData.length > 0 ? (
-                      filteredUserData
+
+                    {userData.length > 0 ? (
+                      userData
                         .slice(currentPage * pageSize, (currentPage + 1) * pageSize)
                         .map((data) => (
                           <tr key={data.userId}>
@@ -347,42 +374,73 @@ export const List = () => {
               <div className="flex justify-between">
                 <div>
                   Showing {currentPage * pageSize + 1} to{' '}
-                  {Math.min((currentPage + 1) * pageSize, userData.length)} of{' '}
-                  {filteredUserData?.length} entries
+                  {Math.min((currentPage + 1) * pageSize, userData.length)} of {userData?.length}{' '}
+                  entries
                 </div>
                 <div>
-                  <Pagination>
-                    <PaginationItem>
-                      <PaginationLink first href="#" />
-                    </PaginationItem>
-                    <PaginationItem disabled={currentPage <= 0}>
-                      <PaginationLink
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setCurrentPage(currentPage - 1);
-                        }}
-                        previous
-                        href="#"
-                      />
-                    </PaginationItem>
-                    {pageNumbers.map((number) => (
-                      <PaginationItem key={number} active={number - 1 === currentPage}>
-                        <PaginationLink onClick={() => paginate(number)}>{number}</PaginationLink>
-                      </PaginationItem>
-                    ))}
-                    <PaginationLink
-                      disabled={currentPage >= filteredUserData - 1}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setCurrentPage(currentPage + 1);
-                      }}
-                      next
-                      href="#"
-                    />
-                    <PaginationItem>
-                      <PaginationLink href="#" last />
-                    </PaginationItem>
-                  </Pagination>
+                  <React.Fragment>
+                    <div className="pagination-wrapper">
+                      <Pagination aria-label="Page navigation example">
+                        <PaginationItem disabled={currentPage <= 0}>
+                          <PaginationLink
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setCurrentPage(0);
+                            }}
+                            first
+                            href="#"
+                          />
+                        </PaginationItem>
+                        <PaginationItem disabled={currentPage <= 0}>
+                          <PaginationLink
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setCurrentPage(currentPage - 1);
+                            }}
+                            previous
+                            href="#"
+                          />
+                        </PaginationItem>
+
+                        {Array.from(
+                          { length: endPage - startPage + 1 },
+                          (_, i) => startPage + i
+                        ).map((pageNumber) => (
+                          <PaginationItem key={pageNumber} active={pageNumber === currentPage}>
+                            <PaginationLink
+                              onClick={(e) => {
+                                e.preventDefault();
+                                setCurrentPage(pageNumber);
+                              }}
+                            >
+                              {pageNumber + 1}
+                            </PaginationLink>
+                          </PaginationItem>
+                        ))}
+
+                        <PaginationItem disabled={currentPage >= pagesCount - 1}>
+                          <PaginationLink
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setCurrentPage(currentPage + 1);
+                            }}
+                            next
+                            href="#"
+                          />
+                        </PaginationItem>
+                        <PaginationItem disabled={currentPage >= pagesCount - 1}>
+                          <PaginationLink
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setCurrentPage(pagesCount - 1);
+                            }}
+                            last
+                            href="#"
+                          />
+                        </PaginationItem>
+                      </Pagination>
+                    </div>
+                  </React.Fragment>
                 </div>
               </div>
             </div>

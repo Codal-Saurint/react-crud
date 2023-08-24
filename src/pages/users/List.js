@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button, Input, Table } from 'reactstrap';
 import * as faker from '@faker-js/faker';
@@ -16,6 +16,9 @@ import {
 } from 'reactstrap';
 import { RandomUser } from '../../components/shared/RandomUser';
 
+const pageSize = 10;
+const pagesToShow = 10;
+
 export const List = () => {
   const [userData, setUserData] = useState([]);
   const [deleteModal, setDeleteModal] = useState(false);
@@ -23,15 +26,14 @@ export const List = () => {
   const navigate = useNavigate();
   const [selectedId, setSelectedId] = useState(null);
   const [localStorageChanged, setLocalStorageChanged] = useState(false);
-  const pageSize = 10;
-  const pagesToShow = 10;
   const [currentPage, setCurrentPage] = useState(0);
   const [changedId, setChangedId] = useState('');
   const [changedFirstName, setChangedFirstName] = useState('');
   const [changedLastName, setChangedLastName] = useState('');
   const [changedEmail, setChangedEmail] = useState('');
   const [changedStatus, setChangedStatus] = useState('');
-  //const [statusFilter, setStatusFilter] = useState('');
+  const [globalsearch, setGlobalSearch] = useState('');
+  const [totalUsers, setTotalUsers] = useState(0);
 
   const handleLogout = () => {
     localStorage.clear();
@@ -59,12 +61,13 @@ export const List = () => {
 
   const addRandomUsers = (max_size) => {
     const tempUsers = RandomUser(max_size);
-    setUserData(tempUsers);
     const lcUsers = JSON.parse(localStorage.getItem('STUSERS'));
     if (lcUsers) {
-      const updatedArray = [...lcUsers, ...tempUsers];
-      localStorage.setItem('STUSERS', JSON.stringify(updatedArray));
+      const updatedUsers = tempUsers.concat(lcUsers);
+      setUserData(updatedUsers);
+      localStorage.setItem('STUSERS', JSON.stringify(updatedUsers));
     } else {
+      setUserData(tempUsers);
       localStorage.setItem('STUSERS', JSON.stringify(tempUsers));
     }
   };
@@ -90,44 +93,62 @@ export const List = () => {
       default:
         break;
     }
+    //setCurrentPage(0);
   };
+
+  const filteredData = useMemo(() => {
+    let computedData = Array.from(userData);
+    console.log('Start', computedData);
+
+    if (changedId !== '') {
+      computedData = computedData.filter((item) =>
+        removeHyphen(item.id).toLowerCase().includes(changedId.toLowerCase())
+      );
+    }
+    if (changedFirstName !== '') {
+      computedData = computedData.filter((item) =>
+        removeHyphen(item.firstName).toLowerCase().includes(changedFirstName.toLowerCase())
+      );
+    }
+
+    if (changedLastName !== '') {
+      computedData = computedData.filter((item) =>
+        removeHyphen(item.lastName).toLowerCase().includes(changedLastName.toLowerCase())
+      );
+    }
+
+    if (changedEmail !== '') {
+      computedData = computedData.filter((item) =>
+        removeHyphen(item.email).toLowerCase().includes(changedEmail.toLowerCase())
+      );
+    }
+    if (changedStatus !== '') {
+      let statusLowerCase = changedStatus.toLowerCase();
+      if (statusLowerCase !== 'all') {
+        computedData = computedData.filter((item) => item.status === statusLowerCase);
+      }
+    }
+
+    const slicedData = computedData.slice(currentPage * pageSize, (currentPage + 1) * pageSize);
+
+    return slicedData;
+  }, [
+    currentPage,
+    changedId,
+    changedEmail,
+    changedFirstName,
+    changedLastName,
+    changedStatus,
+    userData
+  ]);
 
   useEffect(() => {
     const usersLC = JSON.parse(localStorage.getItem('STUSERS') || '[]');
-
-    if (usersLC.length > 0) {
-      let filteredData = usersLC;
-      if (changedId !== '') {
-        filteredData = filteredData.filter((item) =>
-          removeHyphen(item.id).toLowerCase().includes(changedId.toLowerCase())
-        );
-      }
-      if (changedFirstName !== '') {
-        filteredData = filteredData.filter((item) =>
-          removeHyphen(item.firstName).toLowerCase().includes(changedFirstName.toLowerCase())
-        );
-      }
-
-      if (changedLastName !== '') {
-        filteredData = filteredData.filter((item) =>
-          removeHyphen(item.lastName).toLowerCase().includes(changedLastName.toLowerCase())
-        );
-      }
-
-      if (changedEmail !== '') {
-        filteredData = filteredData.filter((item) =>
-          removeHyphen(item.email).toLowerCase().includes(changedEmail.toLowerCase())
-        );
-      }
-      if (changedStatus !== '') {
-        let statusLowerCase = changedStatus.toLowerCase();
-        if (statusLowerCase !== 'all') {
-          filteredData = filteredData.filter((item) => item.status === statusLowerCase);
-        }
-      }
-      setUserData(filteredData);
+    console.log('FIRST', usersLC);
+    if (usersLC) {
+      setUserData(usersLC);
     }
-  }, [changedId, changedFirstName, changedLastName, changedEmail, changedStatus]);
+  }, []);
 
   const pageNumbers = [];
 
@@ -138,6 +159,8 @@ export const List = () => {
   const pagesCount = Math.ceil(userData.length / pageSize);
   const startPage = Math.max(currentPage - Math.floor(pagesToShow / 2), 0);
   const endPage = Math.min(startPage + pagesToShow - 1, pagesCount - 1);
+
+  console.log('SECOND', filteredData);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -190,6 +213,7 @@ export const List = () => {
                       setUserData([]);
                       localStorage.setItem('STUSERS', JSON.stringify(''));
                       setDeleteAllUsersModal(!deleteAllUsersModal);
+                      setCurrentPage(0);
                     }}
                   >
                     Confirm
@@ -323,44 +347,42 @@ export const List = () => {
                       <td></td>
                     </tr>
 
-                    {userData.length > 0 ? (
-                      userData
-                        .slice(currentPage * pageSize, (currentPage + 1) * pageSize)
-                        .map((data) => (
-                          <tr key={data.userId}>
-                            <td>
-                              <Link>{data?.id}</Link>
-                            </td>
-                            <td>{data?.firstName}</td>
-                            <td>{data?.lastName}</td>
-                            <td>
-                              <Link to={`mailto:${data?.email}`}>{data?.email}</Link>
-                            </td>
-                            <td>{formattedDate(data?.createdAt)}</td>
-                            <td>{capitalize(data?.status)}</td>
+                    {filteredData.length > 0 ? (
+                      filteredData.map((data) => (
+                        <tr key={data.userId}>
+                          <td>
+                            <Link>{data?.id}</Link>
+                          </td>
+                          <td>{data?.firstName}</td>
+                          <td>{data?.lastName}</td>
+                          <td>
+                            <Link to={`mailto:${data?.email}`}>{data?.email}</Link>
+                          </td>
+                          <td>{formattedDate(data?.createdAt)}</td>
+                          <td>{capitalize(data?.status)}</td>
 
-                            <td className="flex items-center w-full">
-                              <Link
-                                to={`edit/${data.id}`}
-                                className="btn btn-outline-dark flex items-center justify-center p-0 w-6 h-6"
-                              >
-                                <i className="fa fa-pencil"></i>
-                              </Link>
-                              <Link
-                                to={`view/${data.id}`}
-                                className="btn btn-outline-dark btn-sm flex items-center justify-center p-0 w-6 h-6"
-                              >
-                                <i className="fa fa-eye"></i>
-                              </Link>
-                              <Link
-                                onClick={() => handleOpenModal(data?.id)}
-                                className="btn btn-outline-danger btn-sm flex items-center justify-center p-0 w-6 h-6"
-                              >
-                                <i className="fa fa-trash"></i>
-                              </Link>
-                            </td>
-                          </tr>
-                        ))
+                          <td className="flex items-center w-full">
+                            <Link
+                              to={`edit/${data.id}`}
+                              className="btn btn-outline-dark flex items-center justify-center p-0 w-6 h-6"
+                            >
+                              <i className="fa fa-pencil"></i>
+                            </Link>
+                            <Link
+                              to={`view/${data.id}`}
+                              className="btn btn-outline-dark btn-sm flex items-center justify-center p-0 w-6 h-6"
+                            >
+                              <i className="fa fa-eye"></i>
+                            </Link>
+                            <Link
+                              onClick={() => handleOpenModal(data?.id)}
+                              className="btn btn-outline-danger btn-sm flex items-center justify-center p-0 w-6 h-6"
+                            >
+                              <i className="fa fa-trash"></i>
+                            </Link>
+                          </td>
+                        </tr>
+                      ))
                     ) : (
                       <tr>
                         <td colSpan={7} className="text-center">
@@ -372,76 +394,81 @@ export const List = () => {
                 </Table>
               </div>
               <div className="flex justify-between">
-                <div>
-                  Showing {currentPage * pageSize + 1} to{' '}
-                  {Math.min((currentPage + 1) * pageSize, userData.length)} of {userData?.length}{' '}
-                  entries
-                </div>
-                <div>
-                  <React.Fragment>
-                    <div className="pagination-wrapper">
-                      <Pagination aria-label="Page navigation example">
-                        <PaginationItem disabled={currentPage <= 0}>
-                          <PaginationLink
-                            onClick={(e) => {
-                              e.preventDefault();
-                              setCurrentPage(0);
-                            }}
-                            first
-                            href="#"
-                          />
-                        </PaginationItem>
-                        <PaginationItem disabled={currentPage <= 0}>
-                          <PaginationLink
-                            onClick={(e) => {
-                              e.preventDefault();
-                              setCurrentPage(currentPage - 1);
-                            }}
-                            previous
-                            href="#"
-                          />
-                        </PaginationItem>
+                {/* {userData.length > 0 && (
+                  <div>
+                    Showing {currentPage * pageSize + 1} to{' '}
+                    {Math.min((currentPage + 1) * pageSize, userData.length)} of {userData?.length}{' '}
+                    entries
+                  </div>
+                )} */}
 
-                        {Array.from(
-                          { length: endPage - startPage + 1 },
-                          (_, i) => startPage + i
-                        ).map((pageNumber) => (
-                          <PaginationItem key={pageNumber} active={pageNumber === currentPage}>
+                {userData.length > 0 && (
+                  <div>
+                    <React.Fragment>
+                      <div className="pagination-wrapper">
+                        <Pagination aria-label="Page navigation example">
+                          <PaginationItem disabled={currentPage <= 0}>
                             <PaginationLink
                               onClick={(e) => {
                                 e.preventDefault();
-                                setCurrentPage(pageNumber);
+                                setCurrentPage(0);
                               }}
-                            >
-                              {pageNumber + 1}
-                            </PaginationLink>
+                              first
+                              href="#"
+                            />
                           </PaginationItem>
-                        ))}
+                          <PaginationItem disabled={currentPage <= 0}>
+                            <PaginationLink
+                              onClick={(e) => {
+                                e.preventDefault();
+                                setCurrentPage(currentPage - 1);
+                              }}
+                              previous
+                              href="#"
+                            />
+                          </PaginationItem>
 
-                        <PaginationItem disabled={currentPage >= pagesCount - 1}>
-                          <PaginationLink
-                            onClick={(e) => {
-                              e.preventDefault();
-                              setCurrentPage(currentPage + 1);
-                            }}
-                            next
-                            href="#"
-                          />
-                        </PaginationItem>
-                        <PaginationItem disabled={currentPage >= pagesCount - 1}>
-                          <PaginationLink
-                            onClick={(e) => {
-                              e.preventDefault();
-                              setCurrentPage(pagesCount - 1);
-                            }}
-                            last
-                            href="#"
-                          />
-                        </PaginationItem>
-                      </Pagination>
-                    </div>
-                  </React.Fragment>
-                </div>
+                          {Array.from(
+                            { length: endPage - startPage + 1 },
+                            (_, i) => startPage + i
+                          ).map((pageNumber) => (
+                            <PaginationItem key={pageNumber} active={pageNumber === currentPage}>
+                              <PaginationLink
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  setCurrentPage(pageNumber);
+                                }}
+                              >
+                                {pageNumber + 1}
+                              </PaginationLink>
+                            </PaginationItem>
+                          ))}
+
+                          <PaginationItem disabled={currentPage >= pagesCount - 1}>
+                            <PaginationLink
+                              onClick={(e) => {
+                                e.preventDefault();
+                                setCurrentPage(currentPage + 1);
+                              }}
+                              next
+                              href="#"
+                            />
+                          </PaginationItem>
+                          <PaginationItem disabled={currentPage >= pagesCount - 1}>
+                            <PaginationLink
+                              onClick={(e) => {
+                                e.preventDefault();
+                                setCurrentPage(pagesCount - 1);
+                              }}
+                              last
+                              href="#"
+                            />
+                          </PaginationItem>
+                        </Pagination>
+                      </div>
+                    </React.Fragment>
+                  </div>
+                )}
               </div>
             </div>
           </div>

@@ -17,7 +17,6 @@ import {
 import { RandomUser } from '../../components/shared/RandomUser';
 import { number } from 'prop-types';
 
-
 export const List = () => {
   const [userData, setUserData] = useState([]);
   const [deleteModal, setDeleteModal] = useState(false);
@@ -33,6 +32,27 @@ export const List = () => {
   const [globalSearch, setGlobalSearch] = useState('');
   const [totalUsers, setTotalUsers] = useState(0);
   const [pageSize, setPageSize] = useState(10);
+  const [filteredCount, setFilteredCount] = useState(0);
+  const [sortedField, setSortedField] = useState(null);
+  const [sortedColumn, setSortedColumn] = useState(null);
+  const [sortOrder, setSortOrder] = useState(null);
+  const [sortIcon, setSortIcon] = useState('');
+
+  const handleSort = (column) => {
+    console.log('KK', column, filteredData);
+    if (column !== null) {
+      filteredData.sort((a, b) => {
+        if (a[column] < b[column]) {
+          return -1;
+        }
+        if (a[column] > b[column]) {
+          return 1;
+        }
+        return 0;
+      });
+    }
+    setSortIcon(sortIcon === 'down' ? 'up' : 'down');
+  };
 
   const handleLogout = () => {
     localStorage.clear();
@@ -97,6 +117,10 @@ export const List = () => {
   const filteredData = useMemo(() => {
     let computedData = Array.from(userData);
 
+    if (sortedField !== null) {
+      console.log('FIELD', sortedField);
+    }
+
     if (globalSearch !== '') {
       computedData = computedData.filter(
         (item) =>
@@ -136,6 +160,10 @@ export const List = () => {
       }
     }
 
+    if (userData.length !== computedData.length) {
+      setFilteredCount(computedData.length);
+    }
+
     setTotalUsers(computedData.length);
     const maxPage = Math.max(0, Math.ceil(computedData.length / pageSize) - 1);
     setCurrentPage((prevPage) => Math.min(prevPage, maxPage));
@@ -152,7 +180,8 @@ export const List = () => {
     changedStatus,
     userData,
     globalSearch,
-    pageSize
+    pageSize,
+    sortedField
   ]);
 
   useEffect(() => {
@@ -180,7 +209,7 @@ export const List = () => {
         break;
       default:
         console.log('KKK', filteredData.length);
-        setPageSize(filteredData.length);
+        setPageSize(totalUsers);
         break;
     }
   };
@@ -333,8 +362,26 @@ export const List = () => {
                 <Table bordered hover>
                   <thead>
                     <tr>
-                      <th>ID</th>
-                      <th>First Name</th>
+                      <th>
+                        <div onClick={() => handleSort('id')}>
+                          ID{' '}
+                          <i
+                            className={`fa fa-caret-${
+                              sortIcon && sortIcon === 'down' ? 'down' : 'up'
+                            }`}
+                          ></i>
+                        </div>
+                      </th>
+                      <th>
+                        <div onClick={() => handleSort('firstName')}>
+                          First Name{' '}
+                          <i
+                            className={`fa fa-caret-${
+                              sortIcon && sortIcon === 'down' ? 'down' : 'up'
+                            }`}
+                          ></i>
+                        </div>
+                      </th>
                       <th>Last Name</th>
                       <th>Email</th>
                       <th>Created On</th>
@@ -448,13 +495,19 @@ export const List = () => {
                 </Table>
               </div>
               <div className="flex justify-between">
-                {/* {userData.length > 0 && (
-                  <div>
-                    Showing {currentPage * pageSize + 1} to{' '}
-                    {Math.min((currentPage + 1) * pageSize, userData.length)} of {userData?.length}{' '}
+                {console.log('LOL', filteredCount, changedStatus)}
+                <div>
+                  <p>
+                    Showing {currentPage * pageSize + 1} to {(currentPage + 1) * pageSize} of{' '}
+                    {filteredCount !== userData.length || changedStatus !== 'All'
+                      ? ` ${filteredCount}`
+                      : `${userData.length}`}{' '}
                     entries
-                  </div>
-                )} */}
+                    {filteredCount !== userData.length || changedStatus !== 'All'
+                      ? ` (filtered from ${userData.length} total entries)`
+                      : ''}
+                  </p>
+                </div>
 
                 {userData.length > 0 && (
                   <div>

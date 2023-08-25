@@ -17,8 +17,6 @@ import {
 import { RandomUser } from '../../components/shared/RandomUser';
 import { number } from 'prop-types';
 
-const pageSize = 10;
-const pagesToShow = 10;
 
 export const List = () => {
   const [userData, setUserData] = useState([]);
@@ -26,7 +24,6 @@ export const List = () => {
   const [deleteAllUsersModal, setDeleteAllUsersModal] = useState(false);
   const navigate = useNavigate();
   const [selectedId, setSelectedId] = useState(null);
-  const [localStorageChanged, setLocalStorageChanged] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   const [changedId, setChangedId] = useState('');
   const [changedFirstName, setChangedFirstName] = useState('');
@@ -35,6 +32,7 @@ export const List = () => {
   const [changedStatus, setChangedStatus] = useState('');
   const [globalSearch, setGlobalSearch] = useState('');
   const [totalUsers, setTotalUsers] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
 
   const handleLogout = () => {
     localStorage.clear();
@@ -153,7 +151,8 @@ export const List = () => {
     changedLastName,
     changedStatus,
     userData,
-    globalSearch
+    globalSearch,
+    pageSize
   ]);
 
   useEffect(() => {
@@ -162,6 +161,29 @@ export const List = () => {
       setUserData(usersLC);
     }
   }, []);
+
+  const changePageSize = (e) => {
+    let pagesToShow = Number(e.target.value);
+
+    switch (pagesToShow) {
+      case 10:
+        setPageSize(10);
+        break;
+      case 25:
+        setPageSize(25);
+        break;
+      case 50:
+        setPageSize(50);
+        break;
+      case 100:
+        setPageSize(100);
+        break;
+      default:
+        console.log('KKK', filteredData.length);
+        setPageSize(filteredData.length);
+        break;
+    }
+  };
 
   const pageNumbers = [];
 
@@ -278,7 +300,12 @@ export const List = () => {
                 <div className="w-1/2 flex">
                   Show
                   <span>
-                    <Input bsSize="sm" className="mb-3 ml-3" type="select">
+                    <Input
+                      bsSize="sm"
+                      className="mb-3 ml-3"
+                      type="select"
+                      onChange={(e) => changePageSize(e)}
+                    >
                       <option>10</option>
                       <option>25</option>
                       <option>50</option>

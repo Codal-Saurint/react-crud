@@ -40,7 +40,6 @@ export const Login = () => {
         const tempUsers = RandomUser(10);
         localStorage.setItem('STUSERS', JSON.stringify(tempUsers));
       } else {
-        console.log('KK', data);
         alert('Invalid credentials. Please try again.');
       }
     }

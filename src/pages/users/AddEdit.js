@@ -50,7 +50,6 @@ export const AddEdit = () => {
     onSubmit: (data) => {
       if (id) {
         const tempUsers = JSON.parse(localStorage.getItem('STUSERS'));
-        console.log('MM', tempUsers);
         if (tempUsers) {
           const userIndex = tempUsers.findIndex((element) => element.id === id);
 

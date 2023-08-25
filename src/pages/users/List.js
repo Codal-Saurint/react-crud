@@ -15,6 +15,7 @@ import {
   PaginationLink
 } from 'reactstrap';
 import { RandomUser } from '../../components/shared/RandomUser';
+import { number } from 'prop-types';
 
 const pageSize = 10;
 const pagesToShow = 10;
@@ -32,7 +33,7 @@ export const List = () => {
   const [changedLastName, setChangedLastName] = useState('');
   const [changedEmail, setChangedEmail] = useState('');
   const [changedStatus, setChangedStatus] = useState('');
-  const [globalsearch, setGlobalSearch] = useState('');
+  const [globalSearch, setGlobalSearch] = useState('');
   const [totalUsers, setTotalUsers] = useState(0);
 
   const handleLogout = () => {
@@ -70,10 +71,10 @@ export const List = () => {
       setUserData(tempUsers);
       localStorage.setItem('STUSERS', JSON.stringify(tempUsers));
     }
+    setCurrentPage(0);
   };
 
   const handleColumnSearch = (e, filterType) => {
-    console.log('LAST', e, filterType);
     switch (filterType) {
       case 'id':
         setChangedId(e.target.value);
@@ -93,12 +94,20 @@ export const List = () => {
       default:
         break;
     }
-    //setCurrentPage(0);
   };
 
   const filteredData = useMemo(() => {
     let computedData = Array.from(userData);
-    console.log('Start', computedData);
+
+    if (globalSearch !== '') {
+      computedData = computedData.filter(
+        (item) =>
+          removeHyphen(item.id).toLowerCase().includes(globalSearch.toLowerCase()) ||
+          removeHyphen(item.firstName).toLowerCase().includes(globalSearch.toLowerCase()) ||
+          removeHyphen(item.lastName).toLowerCase().includes(globalSearch.toLowerCase()) ||
+          removeHyphen(item.email).toLowerCase().includes(globalSearch.toLowerCase())
+      );
+    }
 
     if (changedId !== '') {
       computedData = computedData.filter((item) =>
@@ -129,7 +138,11 @@ export const List = () => {
       }
     }
 
-    const slicedData = computedData.slice(currentPage * pageSize, (currentPage + 1) * pageSize);
+    setTotalUsers(computedData.length);
+    const maxPage = Math.max(0, Math.ceil(computedData.length / pageSize) - 1);
+    setCurrentPage((prevPage) => Math.min(prevPage, maxPage));
+
+    let slicedData = computedData.slice(currentPage * pageSize, (currentPage + 1) * pageSize);
 
     return slicedData;
   }, [
@@ -139,12 +152,12 @@ export const List = () => {
     changedFirstName,
     changedLastName,
     changedStatus,
-    userData
+    userData,
+    globalSearch
   ]);
 
   useEffect(() => {
     const usersLC = JSON.parse(localStorage.getItem('STUSERS') || '[]');
-    console.log('FIRST', usersLC);
     if (usersLC) {
       setUserData(usersLC);
     }
@@ -152,15 +165,10 @@ export const List = () => {
 
   const pageNumbers = [];
 
-  for (let i = 1; i <= Math.ceil(userData.length / pageSize); i++) {
+  for (let i = 1; i <= Math.ceil(totalUsers / pageSize); i++) {
     pageNumbers.push(i);
   }
-  const paginate = (pageNumber) => setCurrentPage(pageNumber - 1);
-  const pagesCount = Math.ceil(userData.length / pageSize);
-  const startPage = Math.max(currentPage - Math.floor(pagesToShow / 2), 0);
-  const endPage = Math.min(startPage + pagesToShow - 1, pagesCount - 1);
-
-  console.log('SECOND', filteredData);
+  const pagesCount = Math.ceil(totalUsers / pageSize);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -235,7 +243,18 @@ export const List = () => {
                   <i className="fa fa-xs me-2 fa-random"></i>
                   Add Random Users
                 </Button>
-                <Button className="my-2 mx-1" outline>
+                <Button
+                  className="my-2 mx-1"
+                  outline
+                  onClick={() => {
+                    setChangedId('');
+                    setChangedFirstName('');
+                    setChangedLastName('');
+                    setChangedEmail('');
+                    setChangedStatus('all');
+                    setGlobalSearch('');
+                  }}
+                >
                   <i className="fa fa-filter fa-xs me-2"></i>Reset Filter
                 </Button>
                 <Button
@@ -275,7 +294,10 @@ export const List = () => {
                   </label>
                   <Input
                     type="search"
-                    onChange={(e) => handleColumnSearch(e)}
+                    value={globalSearch}
+                    onChange={(e) => {
+                      setGlobalSearch(e.target.value);
+                    }}
                     name="globalSearch"
                   />
                 </div>
@@ -298,6 +320,7 @@ export const List = () => {
                       <td>
                         <Input
                           type="search"
+                          value={changedId}
                           onChange={(e) => handleColumnSearch(e, 'id')}
                           name="id"
                         />
@@ -305,6 +328,7 @@ export const List = () => {
                       <td>
                         <Input
                           type="search"
+                          value={changedFirstName}
                           onChange={(e) => handleColumnSearch(e, 'firstName')}
                           name="firstName"
                         />
@@ -312,6 +336,7 @@ export const List = () => {
                       <td>
                         <Input
                           type="search"
+                          value={changedLastName}
                           onChange={(e) => handleColumnSearch(e, 'lastName')}
                           name="lastName"
                         />
@@ -319,6 +344,7 @@ export const List = () => {
                       <td>
                         <Input
                           type="search"
+                          value={changedEmail}
                           onChange={(e) => handleColumnSearch(e, 'email')}
                           name="email"
                         />
@@ -334,6 +360,7 @@ export const List = () => {
                         <Input
                           bsSize="sm"
                           className="p-10"
+                          value={changedStatus}
                           type="select"
                           onChange={(e) => {
                             handleColumnSearch(e, 'status');
@@ -428,18 +455,15 @@ export const List = () => {
                             />
                           </PaginationItem>
 
-                          {Array.from(
-                            { length: endPage - startPage + 1 },
-                            (_, i) => startPage + i
-                          ).map((pageNumber) => (
-                            <PaginationItem key={pageNumber} active={pageNumber === currentPage}>
+                          {[...Array(pagesCount)].map((_, i) => (
+                            <PaginationItem key={i} active={i === currentPage}>
                               <PaginationLink
                                 onClick={(e) => {
                                   e.preventDefault();
-                                  setCurrentPage(pageNumber);
+                                  setCurrentPage(i);
                                 }}
                               >
-                                {pageNumber + 1}
+                                {i + 1}
                               </PaginationLink>
                             </PaginationItem>
                           ))}

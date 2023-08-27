@@ -22,3 +22,12 @@ export const filterPageArray = [
   { function: 'sort', name: '100' },
   { function: 'sort', name: 'All' }
 ];
+
+export const initialHeadingClicks = {
+  id: false,
+  firstName: false,
+  lastName: false,
+  email: false,
+  createdAt: false,
+  status: false
+};

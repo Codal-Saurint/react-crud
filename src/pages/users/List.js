@@ -5,6 +5,8 @@ import * as faker from '@faker-js/faker';
 import { formattedDate, getAge, get_random_status } from '../../modules/helper';
 import { actionsArray, filterPageArray } from '../../data/constants';
 import { capitalize, removeHyphen, removeSpaceChangeCase } from '../../modules/helper';
+import { initialHeadingClicks } from '../../data/constants';
+
 import {
   Modal,
   ModalHeader,
@@ -15,7 +17,6 @@ import {
   PaginationLink
 } from 'reactstrap';
 import { RandomUser } from '../../components/shared/RandomUser';
-import { number } from 'prop-types';
 
 export const List = () => {
   const [userData, setUserData] = useState([]);
@@ -34,25 +35,9 @@ export const List = () => {
   const [pageSize, setPageSize] = useState(10);
   const [filteredCount, setFilteredCount] = useState(0);
   const [sortedField, setSortedField] = useState(null);
-  const [sortedColumn, setSortedColumn] = useState(null);
-  const [sortOrder, setSortOrder] = useState(null);
+  const [hasClickedHeading, setHasClickedHeading] = useState({ initialHeadingClicks });
   const [sortIcon, setSortIcon] = useState('');
-
-  const handleSort = (column) => {
-    console.log('KK', column, filteredData);
-    if (column !== null) {
-      filteredData.sort((a, b) => {
-        if (a[column] < b[column]) {
-          return -1;
-        }
-        if (a[column] > b[column]) {
-          return 1;
-        }
-        return 0;
-      });
-    }
-    setSortIcon(sortIcon === 'down' ? 'up' : 'down');
-  };
+  const [sortConfig, setSortConfig] = useState(null);
 
   const handleLogout = () => {
     localStorage.clear();
@@ -184,6 +169,35 @@ export const List = () => {
     sortedField
   ]);
 
+  const sortedItems = React.useMemo(() => {
+    let sortedData = [...filteredData];
+    if (sortedField !== null) {
+      sortedData.sort((a, b) => {
+        if (a[sortedField] < b[sortedField]) {
+          return sortConfig.direction === 'ascending' ? -1 : 1;
+        }
+        if (a[sortedField] > b[sortedField]) {
+          return sortConfig.direction === 'ascending' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    setSortIcon(sortIcon ? 'down' : 'up');
+    return sortedData;
+  }, [filteredData, sortedField, sortConfig, sortIcon]);
+
+  const requestSort = (key) => {
+    let direction = 'ascending';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    setHasClickedHeading((prevClicks) => ({
+      ...prevClicks,
+      [key]: true
+    }));
+    setSortConfig({ key, direction });
+    setSortedField(key);
+  };
   useEffect(() => {
     const usersLC = JSON.parse(localStorage.getItem('STUSERS') || '[]');
     if (usersLC) {
@@ -363,29 +377,95 @@ export const List = () => {
                   <thead>
                     <tr>
                       <th>
-                        <div onClick={() => handleSort('id')}>
-                          ID{' '}
-                          <i
-                            className={`fa fa-caret-${
-                              sortIcon && sortIcon === 'down' ? 'down' : 'up'
-                            }`}
-                          ></i>
+                        <div
+                          onClick={() => requestSort('id')}
+                          className="hover:cursor-pointer flex justify-between"
+                        >
+                          ID
+                          {hasClickedHeading.id && (
+                            <i
+                              className={`fa fa-caret-${
+                                sortConfig.direction === 'ascending' ? 'down' : 'up'
+                              }`}
+                            ></i>
+                          )}
                         </div>
                       </th>
                       <th>
-                        <div onClick={() => handleSort('firstName')}>
-                          First Name{' '}
-                          <i
-                            className={`fa fa-caret-${
-                              sortIcon && sortIcon === 'down' ? 'down' : 'up'
-                            }`}
-                          ></i>
+                        <div
+                          onClick={() => requestSort('firstName')}
+                          className="hover:cursor-pointer flex justify-between"
+                        >
+                          First Name
+                          {hasClickedHeading.firstName && (
+                            <i
+                              className={`fa fa-caret-${
+                                sortConfig.direction === 'ascending' ? 'down' : 'up'
+                              }`}
+                            ></i>
+                          )}
                         </div>
                       </th>
-                      <th>Last Name</th>
-                      <th>Email</th>
-                      <th>Created On</th>
-                      <th>Status</th>
+                      <th>
+                        <div
+                          onClick={() => requestSort('lastName')}
+                          className="hover:cursor-pointer flex justify-between"
+                        >
+                          Last Name
+                          {hasClickedHeading.lastName && (
+                            <i
+                              className={`fa fa-caret-${
+                                sortConfig.direction === 'ascending' ? 'down' : 'up'
+                              }`}
+                            ></i>
+                          )}
+                        </div>
+                      </th>
+                      <th>
+                        <div
+                          onClick={() => requestSort('email')}
+                          className="hover:cursor-pointer flex justify-between"
+                        >
+                          Email Address
+                          {hasClickedHeading.email && (
+                            <i
+                              className={`fa fa-caret-${
+                                sortConfig.direction === 'ascending' ? 'down' : 'up'
+                              }`}
+                            ></i>
+                          )}
+                        </div>
+                      </th>
+                      <th>
+                        <div
+                          onClick={() => requestSort('createdAt')}
+                          className="hover:cursor-pointer flex justify-between"
+                        >
+                          Created On
+                          {hasClickedHeading.createdAt && (
+                            <i
+                              className={`fa fa-caret-${
+                                sortConfig.direction === 'ascending' ? 'down' : 'up'
+                              }`}
+                            ></i>
+                          )}
+                        </div>
+                      </th>
+                      <th>
+                        <div
+                          onClick={() => requestSort('status')}
+                          className="hover:cursor-pointer flex justify-between"
+                        >
+                          Status
+                          {hasClickedHeading.status && (
+                            <i
+                              className={`fa fa-caret-${
+                                sortConfig.direction === 'ascending' ? 'down' : 'up'
+                              }`}
+                            ></i>
+                          )}
+                        </div>
+                      </th>
                       <th>Actions</th>
                     </tr>
                   </thead>
@@ -448,8 +528,8 @@ export const List = () => {
                       <td></td>
                     </tr>
 
-                    {filteredData.length > 0 ? (
-                      filteredData.map((data) => (
+                    {sortedItems.length > 0 ? (
+                      sortedItems.map((data) => (
                         <tr key={data.userId}>
                           <td>
                             <Link>{data?.id}</Link>

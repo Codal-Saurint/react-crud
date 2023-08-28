@@ -5,7 +5,7 @@ import * as faker from '@faker-js/faker';
 import { formattedDate, getAge, get_random_status } from '../../modules/helper';
 import { actionsArray, filterPageArray } from '../../data/constants';
 import { capitalize, removeHyphen, removeSpaceChangeCase } from '../../modules/helper';
-import { initialHeadingClicks } from '../../data/constants';
+import { initialHeadingClicks, showPageNumber } from '../../data/constants';
 
 import {
   Modal,
@@ -71,9 +71,13 @@ export const List = () => {
       const updatedUsers = tempUsers.concat(lcUsers);
       setUserData(updatedUsers);
       localStorage.setItem('STUSERS', JSON.stringify(updatedUsers));
+      if (pageSize === totalUsers) {
+        setPageSize(updatedUsers.length);
+      }
     } else {
       setUserData(tempUsers);
       localStorage.setItem('STUSERS', JSON.stringify(tempUsers));
+      console.log('DRIFT', tempUsers.length);
     }
     setCurrentPage(0);
   };
@@ -209,25 +213,24 @@ export const List = () => {
   }, []);
 
   const changePageSize = (e) => {
-    let pagesToShow = Number(e.target.value);
+    let pagesToShow = e.target.value;
 
     switch (pagesToShow) {
-      case 10:
+      case '10':
         setPageSize(10);
         break;
-      case 25:
+      case '25':
         setPageSize(25);
         break;
-      case 50:
+      case '50':
         setPageSize(50);
         break;
-      case 100:
+      case '100':
         setPageSize(100);
         break;
+      case 'all':
       default:
         setPageSize(totalUsers);
-        //console.log('default', pageSize);
-
         break;
     }
   };
@@ -256,6 +259,13 @@ export const List = () => {
     }
     return displayedCount;
   }
+
+  const deleteAllUsers = () => {
+    setUserData([]);
+    localStorage.setItem('STUSERS', JSON.stringify(''));
+    setDeleteAllUsersModal(!deleteAllUsersModal);
+    setCurrentPage(0);
+  };
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -305,10 +315,7 @@ export const List = () => {
                   <Button
                     color="danger"
                     onClick={() => {
-                      setUserData([]);
-                      localStorage.setItem('STUSERS', JSON.stringify(''));
-                      setDeleteAllUsersModal(!deleteAllUsersModal);
-                      setCurrentPage(0);
+                      deleteAllUsers();
                     }}
                   >
                     Confirm
@@ -371,11 +378,9 @@ export const List = () => {
                       type="select"
                       onChange={(e) => changePageSize(e)}
                     >
-                      <option>10</option>
-                      <option>25</option>
-                      <option>50</option>
-                      <option>100</option>
-                      <option>All</option>
+                      {showPageNumber.map((page) => (
+                        <option value={page}>{page}</option>
+                      ))}
                     </Input>
                   </span>
                   &nbsp;&nbsp;&nbsp;&nbsp;entries
@@ -597,13 +602,11 @@ export const List = () => {
                 </Table>
               </div>
               <div className="flex justify-between">
-                {console.log('FLEX', pageSize, userData.length, filteredCount)}
                 <div>
                   <p>
                     {pageSize === userData.length
-                      ? `Showing all (${filteredCount}) entries`
+                      ? `Showing all (${displayCount(pageSize)}) entries`
                       : `Showing ${displayCount(startPage)} to ${displayCount(endPage)}`}{' '}
-                    of{' '}
                     {filteredCount > 0 ||
                     globalSearch !== '' ||
                     changedId !== '' ||
@@ -611,8 +614,10 @@ export const List = () => {
                     changedLastName !== '' ||
                     changedEmail !== '' ||
                     changedStatus !== ''
-                      ? `${filteredCount} entries (filtered from ${userData.length} total entries)`
-                      : `${userData.length} entries`}
+                      ? pageSize === userData.length
+                        ? `(filtered from ${userData.length} total entries)`
+                        : `of ${filteredCount} entries (filtered from ${userData.length} total entries)`
+                      : `of ${userData.length} entries`}
                   </p>
                 </div>
 

@@ -31,3 +31,5 @@ export const initialHeadingClicks = {
   createdAt: false,
   status: false
 };
+
+export const showPageNumber = ['10', '25', '50', '100', 'All'];

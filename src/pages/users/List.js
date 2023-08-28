@@ -38,6 +38,7 @@ export const List = () => {
   const [hasClickedHeading, setHasClickedHeading] = useState({ initialHeadingClicks });
   const [sortIcon, setSortIcon] = useState('');
   const [sortConfig, setSortConfig] = useState(null);
+  const pageNumbers = [];
 
   const handleLogout = () => {
     localStorage.clear();
@@ -147,6 +148,8 @@ export const List = () => {
 
     if (userData.length !== computedData.length) {
       setFilteredCount(computedData.length);
+    } else {
+      setFilteredCount(0);
     }
 
     setTotalUsers(computedData.length);
@@ -222,18 +225,37 @@ export const List = () => {
         setPageSize(100);
         break;
       default:
-        console.log('KKK', filteredData.length);
         setPageSize(totalUsers);
+        //console.log('default', pageSize);
+
         break;
     }
   };
-
-  const pageNumbers = [];
 
   for (let i = 1; i <= Math.ceil(totalUsers / pageSize); i++) {
     pageNumbers.push(i);
   }
   const pagesCount = Math.ceil(totalUsers / pageSize);
+  const startPage = currentPage * pageSize + 1;
+  const endPage = (currentPage + 1) * pageSize;
+
+  function displayCount(displayedCount) {
+    if (filteredCount > 0) {
+      displayedCount = filteredCount < displayedCount ? filteredCount : displayedCount;
+    } else if (
+      globalSearch !== '' ||
+      changedId !== '' ||
+      changedFirstName !== '' ||
+      changedLastName !== '' ||
+      changedEmail !== '' ||
+      changedStatus !== ''
+    ) {
+      displayedCount = 0;
+    } else {
+      displayedCount = userData.length < displayedCount ? userData.length : displayedCount;
+    }
+    return displayedCount;
+  }
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -575,17 +597,22 @@ export const List = () => {
                 </Table>
               </div>
               <div className="flex justify-between">
-                {console.log('LOL', filteredCount, changedStatus)}
+                {console.log('FLEX', pageSize, userData.length, filteredCount)}
                 <div>
                   <p>
-                    Showing {currentPage * pageSize + 1} to {(currentPage + 1) * pageSize} of{' '}
-                    {filteredCount !== userData.length || changedStatus !== 'All'
-                      ? ` ${filteredCount}`
-                      : `${userData.length}`}{' '}
-                    entries
-                    {filteredCount !== userData.length || changedStatus !== 'All'
-                      ? ` (filtered from ${userData.length} total entries)`
-                      : ''}
+                    {pageSize === userData.length
+                      ? `Showing all (${filteredCount}) entries`
+                      : `Showing ${displayCount(startPage)} to ${displayCount(endPage)}`}{' '}
+                    of{' '}
+                    {filteredCount > 0 ||
+                    globalSearch !== '' ||
+                    changedId !== '' ||
+                    changedFirstName !== '' ||
+                    changedLastName !== '' ||
+                    changedEmail !== '' ||
+                    changedStatus !== ''
+                      ? `${filteredCount} entries (filtered from ${userData.length} total entries)`
+                      : `${userData.length} entries`}
                   </p>
                 </div>
 

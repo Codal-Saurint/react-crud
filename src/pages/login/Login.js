@@ -39,8 +39,6 @@ export const Login = () => {
         navigate('/dashboard');
         const tempUsers = RandomUser(10);
         localStorage.setItem('STUSERS', JSON.stringify(tempUsers));
-      } else {
-        alert('Invalid credentials. Please try again.');
       }
     }
   });

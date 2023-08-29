@@ -1,10 +1,8 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button, Input, Table } from 'reactstrap';
-import * as faker from '@faker-js/faker';
-import { formattedDate, getAge, get_random_status } from '../../modules/helper';
-import { actionsArray, filterPageArray } from '../../data/constants';
-import { capitalize, removeHyphen, removeSpaceChangeCase } from '../../modules/helper';
+import { formattedDate } from '../../modules/helper';
+import { capitalize, removeHyphen } from '../../modules/helper';
 import { initialHeadingClicks, showPageNumber } from '../../data/constants';
 
 import {
@@ -40,11 +38,6 @@ export const List = () => {
   const [sortConfig, setSortConfig] = useState(null);
   const pageNumbers = [];
 
-  const handleLogout = () => {
-    localStorage.clear();
-    navigate('/login');
-  };
-
   const handleOpenModal = (itemId) => {
     setSelectedId(itemId);
     setDeleteModal(true);
@@ -71,14 +64,11 @@ export const List = () => {
       const updatedUsers = tempUsers.concat(lcUsers);
       setUserData(updatedUsers);
       localStorage.setItem('STUSERS', JSON.stringify(updatedUsers));
-      if (pageSize === totalUsers) {
-        setPageSize(updatedUsers.length);
-      }
     } else {
       setUserData(tempUsers);
       localStorage.setItem('STUSERS', JSON.stringify(tempUsers));
-      console.log('DRIFT', tempUsers.length);
     }
+    console.log('FREE', userData.length);
     setCurrentPage(0);
   };
 
@@ -156,12 +146,15 @@ export const List = () => {
       setFilteredCount(0);
     }
 
-    setTotalUsers(computedData.length);
+    setTotalUsers((prev) => computedData.length);
+    if (pageSize === totalUsers) {
+      setPageSize(computedData.length);
+    }
     const maxPage = Math.max(0, Math.ceil(computedData.length / pageSize) - 1);
     setCurrentPage((prevPage) => Math.min(prevPage, maxPage));
 
     let slicedData = computedData.slice(currentPage * pageSize, (currentPage + 1) * pageSize);
-
+    console.log('MM', totalUsers, pageSize, userData.length, computedData.length);
     return slicedData;
   }, [
     currentPage,
@@ -173,7 +166,8 @@ export const List = () => {
     userData,
     globalSearch,
     pageSize,
-    sortedField
+    sortedField,
+    totalUsers
   ]);
 
   const sortedItems = React.useMemo(() => {
@@ -193,6 +187,7 @@ export const List = () => {
     return sortedData;
   }, [filteredData, sortedField, sortConfig, sortIcon]);
 
+  //This function is called when sorting operation needs to be applied
   const requestSort = (key) => {
     let direction = 'ascending';
     if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
@@ -228,9 +223,11 @@ export const List = () => {
       case '100':
         setPageSize(100);
         break;
-      case 'all':
-      default:
+      case 'All':
         setPageSize(totalUsers);
+        break;
+      default:
+        console.log('PAGE', pageSize);
         break;
     }
   };
@@ -238,10 +235,12 @@ export const List = () => {
   for (let i = 1; i <= Math.ceil(totalUsers / pageSize); i++) {
     pageNumbers.push(i);
   }
+  console.log('BIRD', totalUsers, pageSize);
   const pagesCount = Math.ceil(totalUsers / pageSize);
   const startPage = currentPage * pageSize + 1;
   const endPage = (currentPage + 1) * pageSize;
 
+  //Function to display filteredCount when user uses column filter
   function displayCount(displayedCount) {
     if (filteredCount > 0) {
       displayedCount = filteredCount < displayedCount ? filteredCount : displayedCount;
@@ -495,49 +494,47 @@ export const List = () => {
                       </th>
                       <th>Actions</th>
                     </tr>
-                  </thead>
-                  <tbody>
                     <tr>
-                      <td>
+                      <th>
                         <Input
                           type="search"
                           value={changedId}
                           onChange={(e) => handleColumnSearch(e, 'id')}
                           name="id"
                         />
-                      </td>
-                      <td>
+                      </th>
+                      <th>
                         <Input
                           type="search"
                           value={changedFirstName}
                           onChange={(e) => handleColumnSearch(e, 'firstName')}
                           name="firstName"
                         />
-                      </td>
-                      <td>
+                      </th>
+                      <th>
                         <Input
                           type="search"
                           value={changedLastName}
                           onChange={(e) => handleColumnSearch(e, 'lastName')}
                           name="lastName"
                         />
-                      </td>
-                      <td>
+                      </th>
+                      <th>
                         <Input
                           type="search"
                           value={changedEmail}
                           onChange={(e) => handleColumnSearch(e, 'email')}
                           name="email"
                         />
-                      </td>
-                      <td>
+                      </th>
+                      <th>
                         <Input
                           type="search"
                           onChange={(e) => handleColumnSearch(e, 'search')}
                           name="createdAt"
                         />
-                      </td>
-                      <td>
+                      </th>
+                      <th>
                         <Input
                           bsSize="sm"
                           className="p-10"
@@ -551,15 +548,16 @@ export const List = () => {
                           <option>Active</option>
                           <option>Inactive</option>
                         </Input>
-                      </td>
-                      <td></td>
+                      </th>
+                      <th></th>
                     </tr>
-
+                  </thead>
+                  <tbody>
                     {sortedItems.length > 0 ? (
                       sortedItems.map((data) => (
                         <tr key={data.userId}>
                           <td>
-                            <Link>{data?.id}</Link>
+                            <Link to={`view/${data.id}`}>{data?.id}</Link>
                           </td>
                           <td>{data?.firstName}</td>
                           <td>{data?.lastName}</td>
@@ -569,25 +567,28 @@ export const List = () => {
                           <td>{formattedDate(data?.createdAt)}</td>
                           <td>{capitalize(data?.status)}</td>
 
-                          <td className="flex items-center w-full">
-                            <Link
-                              to={`edit/${data.id}`}
-                              className="btn btn-outline-dark flex items-center justify-center p-0 w-6 h-6"
-                            >
-                              <i className="fa fa-pencil"></i>
-                            </Link>
-                            <Link
-                              to={`view/${data.id}`}
-                              className="btn btn-outline-dark btn-sm flex items-center justify-center p-0 w-6 h-6"
-                            >
-                              <i className="fa fa-eye"></i>
-                            </Link>
-                            <Link
-                              onClick={() => handleOpenModal(data?.id)}
-                              className="btn btn-outline-danger btn-sm flex items-center justify-center p-0 w-6 h-6"
-                            >
-                              <i className="fa fa-trash"></i>
-                            </Link>
+                          <td>
+                            <div className="flex items-center w-full">
+                              <Link
+                                to={`view/${data.id}`}
+                                className="btn btn-outline-dark btn-sm flex items-center justify-center p-0 w-6 h-6"
+                              >
+                                <i className="fa fa-eye"></i>
+                              </Link>
+                              <Link
+                                to={`edit/${data.id}`}
+                                className="btn btn-outline-dark flex items-center justify-center p-0 w-6 h-6"
+                              >
+                                <i className="fa fa-pencil"></i>
+                              </Link>
+
+                              <Link
+                                onClick={() => handleOpenModal(data?.id)}
+                                className="btn btn-outline-danger btn-sm flex items-center justify-center p-0 w-6 h-6"
+                              >
+                                <i className="fa fa-trash"></i>
+                              </Link>
+                            </div>
                           </td>
                         </tr>
                       ))
@@ -620,7 +621,6 @@ export const List = () => {
                       : `of ${userData.length} entries`}
                   </p>
                 </div>
-
                 {userData.length > 0 && (
                   <div>
                     <React.Fragment>
@@ -647,18 +647,20 @@ export const List = () => {
                             />
                           </PaginationItem>
 
-                          {[...Array(pagesCount)].map((_, i) => (
-                            <PaginationItem key={i} active={i === currentPage}>
-                              <PaginationLink
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  setCurrentPage(i);
-                                }}
-                              >
-                                {i + 1}
-                              </PaginationLink>
-                            </PaginationItem>
-                          ))}
+                          {[...Array(pagesCount)].map((_, i) => {
+                            return (
+                              <PaginationItem key={i} active={i === currentPage}>
+                                <PaginationLink
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    setCurrentPage(i);
+                                  }}
+                                >
+                                  {i + 1}
+                                </PaginationLink>
+                              </PaginationItem>
+                            );
+                          })}
 
                           <PaginationItem disabled={currentPage >= pagesCount - 1}>
                             <PaginationLink

@@ -10,8 +10,7 @@ import { Header } from './layouts/Header';
 import { Footer } from './layouts/Footer';
 import { AuthLayout } from './layouts/AuthLayout';
 import { NonAuthLayout } from './layouts/NonAuthLayout';
-
-
+import { GuardLayoutForValidId } from './components/shared/GuardLayoutForValidId';
 
 function App() {
   return (
@@ -26,8 +25,10 @@ function App() {
         <Route path="/" element={<AuthLayout />}>
           <Route path="users" element={<List />} />
           <Route path="users/add" element={<AddEdit />} />
-          <Route path="users/edit/:id" element={<AddEdit />} />
-          <Route path="users/view/:id" element={<View />} />
+          <Route path="/" element={<GuardLayoutForValidId />}>
+            <Route path="users/edit/:id" element={<AddEdit />} />
+            <Route path="users/view/:id" element={<View />} />
+          </Route>
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="*" element={<List />} />
         </Route>

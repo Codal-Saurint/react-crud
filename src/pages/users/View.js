@@ -49,7 +49,6 @@ export const View = () => {
       localStorage.setItem('STUSERS', JSON.stringify(userList));
     }
     setDeleteUserModal(!deleteUserModal);
-    console.log('DELETE CONFIRM', user);
     navigate('/users');
   };
 

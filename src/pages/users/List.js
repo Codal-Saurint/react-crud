@@ -37,6 +37,7 @@ export const List = () => {
   const [sortIcon, setSortIcon] = useState('');
   const [sortConfig, setSortConfig] = useState(null);
   const pageNumbers = [];
+  const pagesToShow = 10;
 
   const handleOpenModal = (itemId) => {
     setSelectedId(itemId);
@@ -68,7 +69,7 @@ export const List = () => {
       setUserData(tempUsers);
       localStorage.setItem('STUSERS', JSON.stringify(tempUsers));
     }
-    console.log('FREE', userData.length);
+
     setCurrentPage(0);
   };
 
@@ -147,14 +148,16 @@ export const List = () => {
     }
 
     setTotalUsers((prev) => computedData.length);
-    if (pageSize === totalUsers) {
-      setPageSize(computedData.length);
-    }
+    // if (pageSize === totalUsers) {
+    //   setPageSize(computedData.length);
+    // }
+
+    const startIndex = Math.max(0, currentPage - Math.floor(pagesToShow / 2));
+    const endIndex = Math.min(filteredCount - 1, startIndex + pagesToShow - 1);
     const maxPage = Math.max(0, Math.ceil(computedData.length / pageSize) - 1);
     setCurrentPage((prevPage) => Math.min(prevPage, maxPage));
 
-    let slicedData = computedData.slice(currentPage * pageSize, (currentPage + 1) * pageSize);
-    console.log('MM', totalUsers, pageSize, userData.length, computedData.length);
+    let slicedData = computedData.slice(startIndex, endIndex);
     return slicedData;
   }, [
     currentPage,
@@ -167,7 +170,7 @@ export const List = () => {
     globalSearch,
     pageSize,
     sortedField,
-    totalUsers
+    filteredCount
   ]);
 
   const sortedItems = React.useMemo(() => {
@@ -227,7 +230,6 @@ export const List = () => {
         setPageSize(totalUsers);
         break;
       default:
-        console.log('PAGE', pageSize);
         break;
     }
   };
@@ -235,10 +237,7 @@ export const List = () => {
   for (let i = 1; i <= Math.ceil(totalUsers / pageSize); i++) {
     pageNumbers.push(i);
   }
-  console.log('BIRD', totalUsers, pageSize);
   const pagesCount = Math.ceil(totalUsers / pageSize);
-  const startPage = currentPage * pageSize + 1;
-  const endPage = (currentPage + 1) * pageSize;
 
   //Function to display filteredCount when user uses column filter
   function displayCount(displayedCount) {
@@ -604,10 +603,10 @@ export const List = () => {
               </div>
               <div className="flex justify-between">
                 <div>
-                  <p>
+                  {/* <p>
                     {pageSize === userData.length
                       ? `Showing all (${displayCount(pageSize)}) entries`
-                      : `Showing ${displayCount(startPage)} to ${displayCount(endPage)}`}{' '}
+                      : `Showing ${displayCount(startIndex)} to ${displayCount(endIndex)}`}{' '}
                     {filteredCount > 0 ||
                     globalSearch !== '' ||
                     changedId !== '' ||
@@ -619,7 +618,7 @@ export const List = () => {
                         ? `(filtered from ${userData.length} total entries)`
                         : `of ${filteredCount} entries (filtered from ${userData.length} total entries)`
                       : `of ${userData.length} entries`}
-                  </p>
+                  </p> */}
                 </div>
                 {userData.length > 0 && (
                   <div>
@@ -648,18 +647,24 @@ export const List = () => {
                           </PaginationItem>
 
                           {[...Array(pagesCount)].map((_, i) => {
-                            return (
-                              <PaginationItem key={i} active={i === currentPage}>
-                                <PaginationLink
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    setCurrentPage(i);
-                                  }}
-                                >
-                                  {i + 1}
-                                </PaginationLink>
-                              </PaginationItem>
-                            );
+                            if (
+                              i >= currentPage - Math.floor(pagesToShow / 2) &&
+                              i <= currentPage + Math.floor(pagesToShow / 2)
+                            ) {
+                              return (
+                                <PaginationItem key={i} active={i === currentPage}>
+                                  <PaginationLink
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      setCurrentPage(i);
+                                    }}
+                                  >
+                                    {i + 1}
+                                  </PaginationLink>
+                                </PaginationItem>
+                              );
+                            }
+                            return null;
                           })}
 
                           <PaginationItem disabled={currentPage >= pagesCount - 1}>

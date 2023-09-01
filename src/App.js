@@ -29,8 +29,8 @@ function App() {
           <Route path="users/edit/:id" element={<AddEdit />} />
           <Route path="users/view/:id" element={<View />} />
           <Route path="dashboard" element={<Dashboard />} />
+          <Route path="*" element={<List />} />
         </Route>
-        <Route path="*" element={<Login />} />
       </Routes>
       <Footer />
     </React.Fragment>

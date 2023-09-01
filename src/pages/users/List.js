@@ -407,13 +407,14 @@ export const List = () => {
                           className="hover:cursor-pointer flex justify-between"
                         >
                           ID
-                          {hasClickedHeading.id && (
-                            <i
-                              className={`fa fa-caret-${
-                                sortConfig.direction === 'ascending' ? 'down' : 'up'
-                              }`}
-                            ></i>
-                          )}
+                          {sortConfig &&
+                            sortConfig.key === 'id' && ( // Check if sortConfig is not null and the current column is 'id'
+                              <i
+                                className={`fa fa-caret-${
+                                  sortConfig.direction === 'ascending' ? 'down' : 'up'
+                                }`}
+                              ></i>
+                            )}
                         </div>
                       </th>
                       <th>
@@ -422,7 +423,7 @@ export const List = () => {
                           className="hover:cursor-pointer flex justify-between"
                         >
                           First Name
-                          {hasClickedHeading.firstName && (
+                          {sortConfig && sortConfig.key === 'firstName' && (
                             <i
                               className={`fa fa-caret-${
                                 sortConfig.direction === 'ascending' ? 'down' : 'up'
@@ -437,7 +438,7 @@ export const List = () => {
                           className="hover:cursor-pointer flex justify-between"
                         >
                           Last Name
-                          {hasClickedHeading.lastName && (
+                          {sortConfig && sortConfig.key === 'lastName' && (
                             <i
                               className={`fa fa-caret-${
                                 sortConfig.direction === 'ascending' ? 'down' : 'up'
@@ -452,7 +453,7 @@ export const List = () => {
                           className="hover:cursor-pointer flex justify-between"
                         >
                           Email Address
-                          {hasClickedHeading.email && (
+                          {sortConfig && sortConfig.key === 'email' && (
                             <i
                               className={`fa fa-caret-${
                                 sortConfig.direction === 'ascending' ? 'down' : 'up'
@@ -467,7 +468,7 @@ export const List = () => {
                           className="hover:cursor-pointer flex justify-between"
                         >
                           Created On
-                          {hasClickedHeading.createdAt && (
+                          {sortConfig && sortConfig.key === 'createdAt' && (
                             <i
                               className={`fa fa-caret-${
                                 sortConfig.direction === 'ascending' ? 'down' : 'up'
@@ -482,7 +483,7 @@ export const List = () => {
                           className="hover:cursor-pointer flex justify-between"
                         >
                           Status
-                          {hasClickedHeading.status && (
+                          {sortConfig && sortConfig.key === 'status' && (
                             <i
                               className={`fa fa-caret-${
                                 sortConfig.direction === 'ascending' ? 'down' : 'up'

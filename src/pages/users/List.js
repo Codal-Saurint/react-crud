@@ -27,6 +27,7 @@ export const List = () => {
   const [changedFirstName, setChangedFirstName] = useState('');
   const [changedLastName, setChangedLastName] = useState('');
   const [changedEmail, setChangedEmail] = useState('');
+  const [changedCreatedAt, setCreatedAt] = useState('');
   const [changedStatus, setChangedStatus] = useState('');
   const [globalSearch, setGlobalSearch] = useState('');
   const [totalUsers, setTotalUsers] = useState(0);
@@ -104,6 +105,9 @@ export const List = () => {
         break;
       case 'status':
         setChangedStatus(e.target.value);
+        break;
+      case 'createdAt':
+        setCreatedAt(e.target.value);
         break;
       default:
         break;
@@ -364,7 +368,9 @@ export const List = () => {
                     setChangedLastName('');
                     setChangedEmail('');
                     setChangedStatus('all');
+                    setCreatedAt('');
                     setGlobalSearch('');
+                    setPageSize(10);
                   }}
                 >
                   <i className="fa fa-filter fa-xs me-2"></i>Reset Filter
@@ -395,6 +401,7 @@ export const List = () => {
                       className="mb-3 ml-3"
                       type="select"
                       onChange={(e) => changePageSize(e)}
+                      value={pageSize}
                     >
                       {showPageNumber.map((page) => (
                         <option value={page}>{page}</option>
@@ -550,8 +557,9 @@ export const List = () => {
                       <th>
                         <Input
                           type="search"
-                          onChange={(e) => handleColumnSearch(e, 'search')}
+                          onChange={(e) => handleColumnSearch(e, 'createdAt')}
                           name="createdAt"
+                          value={changedCreatedAt}
                         />
                       </th>
                       <th>
@@ -624,6 +632,7 @@ export const List = () => {
               </div>
               <div className="flex justify-between">
                 <div>
+                  {console.log('LAST', pageSize, userData.length)}
                   <p>
                     {pageSize === userData.length
                       ? `Showing all (${displayCount(pageSize)}) entries`
@@ -670,26 +679,27 @@ export const List = () => {
                             />
                           </PaginationItem>
 
-                          {[...Array(pagesCount)].map((_, i) => {
-                            if (
-                              i >= currentPage - Math.floor(pagesToShow / 2) &&
-                              i <= currentPage + Math.floor(pagesToShow / 2)
-                            ) {
-                              return (
-                                <PaginationItem key={i} active={i === currentPage}>
-                                  <PaginationLink
-                                    onClick={(e) => {
-                                      e.preventDefault();
-                                      setCurrentPage(i);
-                                    }}
-                                  >
-                                    {i + 1}
-                                  </PaginationLink>
-                                </PaginationItem>
-                              );
-                            }
-                            return null;
-                          })}
+                          {pagesCount &&
+                            [...Array(pagesCount)].map((_, i) => {
+                              if (
+                                i >= currentPage - Math.floor(pagesToShow / 2) &&
+                                i <= currentPage + Math.floor(pagesToShow / 2)
+                              ) {
+                                return (
+                                  <PaginationItem key={i} active={i === currentPage}>
+                                    <PaginationLink
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        setCurrentPage(i);
+                                      }}
+                                    >
+                                      {i + 1}
+                                    </PaginationLink>
+                                  </PaginationItem>
+                                );
+                              }
+                              return null;
+                            })}
 
                           <PaginationItem disabled={currentPage >= pagesCount - 1}>
                             <PaginationLink

@@ -7,6 +7,7 @@ export const Header = () => {
   const [authenticated, setAuthenticated] = useState(null);
   const navigate = useNavigate();
   const loggedInUser = localStorage.getItem('authenticated');
+  const [active, setActive] = useState(null);
 
   useEffect(() => {
     if (loggedInUser) {
@@ -27,12 +28,24 @@ export const Header = () => {
           <img src={reactLogo} className="h-20 w-20 p-4 animate-spin-slow" alt="React logo" />
         </Link>
         {authenticated && (
-          <Link to="/dashboard" className="pl-5 pt-6 text-white no-underline">
+          <Link
+            to="/dashboard"
+            className={`pl-5 pt-6  no-underline ${
+              active === 'dashboard' ? 'text-white' : 'text-slate-400 hover:text-slate-300'
+            }`}
+            onClick={() => setActive('dashboard')}
+          >
             Dashboard
           </Link>
         )}
         {authenticated && (
-          <Link to="/users" className="pl-5 pt-6 text-white no-underline">
+          <Link
+            to="/users"
+            className={`pl-5 pt-6  no-underline ${
+              active === 'users' ? 'text-white' : 'text-slate-400 hover:text-slate-300'
+            }`}
+            onClick={() => setActive('users')}
+          >
             Users
           </Link>
         )}

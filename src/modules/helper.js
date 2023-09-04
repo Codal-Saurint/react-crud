@@ -1,5 +1,6 @@
 export function formattedDate(string) {
-  return new Date(string).toLocaleDateString('en-US');
+  const options = { year: '2-digit', month: '2-digit', day: '2-digit' };
+  return new Date(string).toLocaleDateString('en-US', options);
 }
 
 export function getAge(dateString) {

@@ -62,16 +62,31 @@ export const List = () => {
     const tempUsers = RandomUser(max_size);
     const lcUsers = JSON.parse(localStorage.getItem('STUSERS'));
     if (lcUsers) {
+      console.log('A');
       const updatedUsers = tempUsers.concat(lcUsers);
       setUserData(updatedUsers);
       localStorage.setItem('STUSERS', JSON.stringify(updatedUsers));
+      setTotalUsers(updatedUsers.length);
+      if (pagesToShow === 'All') {
+        setPageSize(updatedUsers.length); // Set the page size to show all records
+      }
     } else {
+      console.log('B');
       setUserData(tempUsers);
       localStorage.setItem('STUSERS', JSON.stringify(tempUsers));
+      setTotalUsers(tempUsers.length);
+      if (pagesToShow === 'All') {
+        setPageSize(tempUsers.length); // Set the page size to show all records
+      }
     }
-
     setCurrentPage(0);
+
+    console.log('END', userData.length);
   };
+
+  useEffect(() => {
+    setTotalUsers(userData.length);
+  }, [userData]);
 
   const handleColumnSearch = (e, filterType) => {
     switch (filterType) {
@@ -94,6 +109,20 @@ export const List = () => {
         break;
     }
   };
+
+  const changePageSize = React.useCallback(
+    (e) => {
+      let pagesToShow = e.target.value;
+      console.log('PAGE', pagesToShow);
+      if (pagesToShow === 'All') {
+        setCurrentPage(0); // Reset the current page to the first page
+        setPageSize(totalUsers); // Set the page size to show all records
+      } else {
+        setPageSize(Number(pagesToShow)); // Set the page size to the selected value
+      }
+    },
+    [totalUsers]
+  );
 
   const filteredData = useMemo(() => {
     let computedData = Array.from(userData);
@@ -147,17 +176,15 @@ export const List = () => {
       setFilteredCount(0);
     }
 
-    setTotalUsers((prev) => computedData.length);
-    // if (pageSize === totalUsers) {
-    //   setPageSize(computedData.length);
-    // }
+    setPageSize(pageSize);
 
-    const startIndex = Math.max(0, currentPage - Math.floor(pagesToShow / 2));
-    const endIndex = Math.min(filteredCount - 1, startIndex + pagesToShow - 1);
+    setTotalUsers(userData.length);
+
     const maxPage = Math.max(0, Math.ceil(computedData.length / pageSize) - 1);
     setCurrentPage((prevPage) => Math.min(prevPage, maxPage));
 
-    let slicedData = computedData.slice(startIndex, endIndex);
+    let slicedData = computedData.slice(currentPage * pageSize, (currentPage + 1) * pageSize);
+    console.log('MM', totalUsers, pageSize, userData.length, computedData.length);
     return slicedData;
   }, [
     currentPage,
@@ -170,7 +197,7 @@ export const List = () => {
     globalSearch,
     pageSize,
     sortedField,
-    filteredCount
+    totalUsers
   ]);
 
   const sortedItems = React.useMemo(() => {
@@ -210,34 +237,26 @@ export const List = () => {
     }
   }, []);
 
-  const changePageSize = (e) => {
-    let pagesToShow = e.target.value;
+  useEffect(() => {
+    // This code will run whenever pageSize changes
+    console.log('Updated Page Size:', pageSize);
 
-    switch (pagesToShow) {
-      case '10':
-        setPageSize(10);
-        break;
-      case '25':
-        setPageSize(25);
-        break;
-      case '50':
-        setPageSize(50);
-        break;
-      case '100':
-        setPageSize(100);
-        break;
-      case 'All':
-        setPageSize(totalUsers);
-        break;
-      default:
-        break;
-    }
-  };
+    // You can perform any actions that depend on the updated pageSize here
+
+    // Example: Recalculate page numbers or trigger any relevant logic
+    const pagesCount = Math.ceil(totalUsers / pageSize);
+    console.log('Updated CEIL', pagesCount, totalUsers, pageSize);
+
+    // ... other logic that depends on pageSize ...
+  }, [pageSize, totalUsers, changePageSize]); // Include totalUsers if it's used in the calculation
 
   for (let i = 1; i <= Math.ceil(totalUsers / pageSize); i++) {
     pageNumbers.push(i);
   }
-  const pagesCount = Math.ceil(totalUsers / pageSize);
+  const pagesCount = totalUsers === 0 ? 1 : Math.ceil(totalUsers / pageSize);
+  console.log('COUNT', pagesCount, totalUsers, pageSize);
+  const startIndex = Math.max(0, currentPage - Math.floor(pagesToShow / 2));
+  const endIndex = Math.min(filteredCount - 1, startIndex + pagesToShow - 1);
 
   //Function to display filteredCount when user uses column filter
   function displayCount(displayedCount) {
@@ -263,6 +282,7 @@ export const List = () => {
     localStorage.setItem('STUSERS', JSON.stringify(''));
     setDeleteAllUsersModal(!deleteAllUsersModal);
     setCurrentPage(0);
+    setTotalUsers(userData.length);
   };
 
   return (
@@ -604,10 +624,12 @@ export const List = () => {
               </div>
               <div className="flex justify-between">
                 <div>
-                  {/* <p>
+                  <p>
                     {pageSize === userData.length
                       ? `Showing all (${displayCount(pageSize)}) entries`
-                      : `Showing ${displayCount(startIndex)} to ${displayCount(endIndex)}`}{' '}
+                      : `Showing ${displayCount(currentPage * pageSize + 1)} to ${displayCount(
+                          (currentPage + 1) * pageSize
+                        )}`}{' '}
                     {filteredCount > 0 ||
                     globalSearch !== '' ||
                     changedId !== '' ||
@@ -619,8 +641,9 @@ export const List = () => {
                         ? `(filtered from ${userData.length} total entries)`
                         : `of ${filteredCount} entries (filtered from ${userData.length} total entries)`
                       : `of ${userData.length} entries`}
-                  </p> */}
+                  </p>
                 </div>
+                {console.log('TRICK', currentPage, pagesToShow, pagesCount)}
                 {userData.length > 0 && (
                   <div>
                     <React.Fragment>

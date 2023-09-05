@@ -47,7 +47,7 @@ export const Login = () => {
     <div className="flex flex-col min-h-screen">
       <div className="flex-grow rounded-md bg-gray-50 px-[450px] h-96">
         <h1 className="py-4 text-lg text-center">Login</h1>
-        <div className="border-2 bg-white p-5 rounded-md border-gray-300">
+        <div className="border-2 bg-white p-3 rounded-md border-gray-300">
           <form onSubmit={formik.handleSubmit}>
             <div className="flex flex-col">
               <label for="email" className="mb-2">

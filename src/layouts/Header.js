@@ -1,5 +1,5 @@
 import reactLogo from '../assets/images/react.svg';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import '../assets/styles/styles.css';
 
@@ -9,13 +9,17 @@ export const Header = () => {
   const loggedInUser = localStorage.getItem('authenticated');
   const [active, setActive] = useState(null);
 
+  const location = useLocation();
   useEffect(() => {
+    const temp = location.pathname.replace(/\\/g, '');
+    console.log('path', temp);
+
     if (loggedInUser) {
       setAuthenticated(loggedInUser);
     } else {
       setAuthenticated(false);
     }
-  }, [loggedInUser]);
+  }, [loggedInUser, location.pathname]);
   const handleLogout = () => {
     localStorage.clear();
     setAuthenticated(false);

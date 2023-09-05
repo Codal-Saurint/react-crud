@@ -37,6 +37,7 @@ export const List = () => {
   const [hasClickedHeading, setHasClickedHeading] = useState({ initialHeadingClicks });
   const [sortIcon, setSortIcon] = useState('');
   const [sortConfig, setSortConfig] = useState(null);
+  const [pageFilter, setPageFilter] = useState('');
   const pageNumbers = [];
   const pagesToShow = 10;
 
@@ -60,29 +61,28 @@ export const List = () => {
   };
 
   const addRandomUsers = (max_size) => {
+    console.log('addRandomUsers called with max_size:', max_size);
+
     const tempUsers = RandomUser(max_size);
+    console.log('tempUsers:', tempUsers);
+
     const lcUsers = JSON.parse(localStorage.getItem('STUSERS'));
+    console.log('lcUsers:', lcUsers);
     if (lcUsers) {
-      console.log('A');
+      console.log('A', pageFilter);
       const updatedUsers = tempUsers.concat(lcUsers);
       setUserData(updatedUsers);
       localStorage.setItem('STUSERS', JSON.stringify(updatedUsers));
-      setTotalUsers(updatedUsers.length);
-      if (pagesToShow === 'All') {
-        setPageSize(updatedUsers.length); // Set the page size to show all records
-      }
+      setPageSize(pageFilter === 'All' ? updatedUsers.length : pageFilter);
     } else {
-      console.log('B');
+      console.log('BLOCK', pageFilter);
       setUserData(tempUsers);
       localStorage.setItem('STUSERS', JSON.stringify(tempUsers));
-      setTotalUsers(tempUsers.length);
-      if (pagesToShow === 'All') {
-        setPageSize(tempUsers.length); // Set the page size to show all records
-      }
+      setPageSize(pageFilter === 'All' ? tempUsers.length : pageFilter);
     }
     setCurrentPage(0);
-
-    console.log('END', userData.length);
+    setTotalUsers(userData?.length);
+    console.log('END', userData?.length);
   };
 
   useEffect(() => {
@@ -115,11 +115,12 @@ export const List = () => {
   };
 
   const changePageSize = React.useCallback(
-    (e) => {
-      let pagesToShow = e.target.value;
+    (pagesToShow) => {
+      //let pagesToShow = e.target.value;
       console.log('PAGE', pagesToShow);
       if (pagesToShow === 'All') {
         setCurrentPage(0); // Reset the current page to the first page
+        // setPageSize('All');
         setPageSize(totalUsers); // Set the page size to show all records
       } else {
         setPageSize(Number(pagesToShow)); // Set the page size to the selected value
@@ -186,10 +187,16 @@ export const List = () => {
 
     const maxPage = Math.max(0, Math.ceil(computedData.length / pageSize) - 1);
     setCurrentPage((prevPage) => Math.min(prevPage, maxPage));
+    console.log('MM', pageFilter, pageSize);
+    if (pageFilter === 'All') {
+      console.log('IF', pageFilter);
+      return computedData;
+    } else {
+      console.log('ELSE', pageFilter);
 
-    let slicedData = computedData.slice(currentPage * pageSize, (currentPage + 1) * pageSize);
-    console.log('MM', totalUsers, pageSize, userData.length, computedData.length);
-    return slicedData;
+      let slicedData = computedData.slice(currentPage * pageSize, (currentPage + 1) * pageSize);
+      return slicedData;
+    }
   }, [
     currentPage,
     changedId,
@@ -201,7 +208,7 @@ export const List = () => {
     globalSearch,
     pageSize,
     sortedField,
-    totalUsers
+    pageFilter
   ]);
 
   const sortedItems = React.useMemo(() => {
@@ -243,7 +250,7 @@ export const List = () => {
 
   useEffect(() => {
     // This code will run whenever pageSize changes
-    console.log('Updated Page Size:', pageSize);
+    console.log('Updated Page Size and Page Filter:', pageSize, pageFilter);
 
     // You can perform any actions that depend on the updated pageSize here
 
@@ -252,7 +259,7 @@ export const List = () => {
     console.log('Updated CEIL', pagesCount, totalUsers, pageSize);
 
     // ... other logic that depends on pageSize ...
-  }, [pageSize, totalUsers, changePageSize]); // Include totalUsers if it's used in the calculation
+  }, [pageSize, totalUsers, pageFilter]); // Include totalUsers if it's used in the calculation
 
   for (let i = 1; i <= Math.ceil(totalUsers / pageSize); i++) {
     pageNumbers.push(i);
@@ -287,6 +294,7 @@ export const List = () => {
     setDeleteAllUsersModal(!deleteAllUsersModal);
     setCurrentPage(0);
     setTotalUsers(userData.length);
+    setPageSize(pageFilter === 'All' ? 0 : pageFilter);
   };
 
   return (
@@ -400,8 +408,11 @@ export const List = () => {
                       bsSize="sm"
                       className="mb-3 ml-3"
                       type="select"
-                      onChange={(e) => changePageSize(e)}
-                      value={pageSize}
+                      onChange={(e) => {
+                        setPageFilter(e.target.value);
+                        changePageSize(e.target.value); // Call changePageSize here
+                      }}
+                      value={pageFilter}
                     >
                       {showPageNumber.map((page) => (
                         <option value={page}>{page}</option>

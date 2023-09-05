@@ -61,26 +61,18 @@ export const List = () => {
   };
 
   const addRandomUsers = (max_size) => {
-    try {
-      const lcUsers = JSON.parse(localStorage.getItem('STUSERS'));
-      const tempUsers = RandomUser(max_size);
-      console.log('FREE', lcUsers);
+    const lcUsers = JSON.parse(localStorage.getItem('STUSERS'));
+    const tempUsers = RandomUser(max_size);
 
-      if (lcUsers && lcUsers.length > 0) {
-        const updatedUsers = tempUsers.concat(lcUsers);
-        setUserData(updatedUsers);
-        localStorage.setItem('STUSERS', JSON.stringify(updatedUsers));
-        setTotalUsers(updatedUsers.length);
-      } else {
-        setUserData(tempUsers);
-        localStorage.setItem('STUSERS', JSON.stringify(tempUsers));
-        setTotalUsers(tempUsers.length);
-      }
-      console.log('PAGE', pageFilter, totalUsers, tempUsers);
-      // Uncomment the next line if needed
-      // setCurrentPage(0);
-    } catch (error) {
-      console.error('Error in addRandomUsers:', error);
+    if (lcUsers && lcUsers.length > 0) {
+      const updatedUsers = tempUsers.concat(lcUsers);
+      setUserData(updatedUsers);
+      localStorage.setItem('STUSERS', JSON.stringify(updatedUsers));
+      setTotalUsers(updatedUsers.length);
+    } else {
+      setUserData(tempUsers);
+      localStorage.setItem('STUSERS', JSON.stringify(tempUsers));
+      setTotalUsers(tempUsers.length);
     }
   };
 
@@ -111,10 +103,8 @@ export const List = () => {
 
   const changePageSize = React.useCallback(
     (pagesToShow) => {
-      //let pagesToShow = e.target.value;
       if (pagesToShow === 'All') {
         setCurrentPage(0); // Reset the current page to the first page
-        // setPageSize('All');
         setPageSize(totalUsers); // Set the page size to show all records
       } else {
         setPageSize(Number(pagesToShow)); // Set the page size to the selected value
@@ -174,20 +164,25 @@ export const List = () => {
       setFilteredCount(0);
     }
 
-    setPageSize(pageSize);
+    //setPageSize(pageSize);
 
     setTotalUsers(userData.length);
 
     const maxPage = Math.max(0, Math.ceil(computedData.length / pageSize) - 1);
     setCurrentPage((prevPage) => Math.min(prevPage, maxPage));
-    console.log('FILL', pageSize, pageFilter);
-    if (pageFilter === 'All') {
+
+    let slicedData = computedData;
+
+    if (pageFilter === 'All' && slicedData.length > 0) {
       setPageSize(computedData?.length);
       return computedData;
     } else {
-      let slicedData = computedData.slice(currentPage * pageSize, (currentPage + 1) * pageSize);
+      slicedData = computedData.slice(currentPage * pageSize, (currentPage + 1) * pageSize);
       return slicedData;
     }
+
+    // let slicedData = computedData.slice(currentPage * pageSize, (currentPage + 1) * pageSize);
+    // return slicedData;
   }, [
     currentPage,
     changedId,

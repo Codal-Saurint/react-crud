@@ -11,9 +11,6 @@ export const Header = () => {
 
   const location = useLocation();
   useEffect(() => {
-    const temp = location.pathname.replace(/\\/g, '');
-    console.log('path', temp);
-
     if (loggedInUser) {
       setAuthenticated(loggedInUser);
     } else {

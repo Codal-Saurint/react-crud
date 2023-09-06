@@ -36,7 +36,7 @@ export const List = () => {
   const [sortedField, setSortedField] = useState(null);
   const [hasClickedHeading, setHasClickedHeading] = useState({ initialHeadingClicks });
   const [sortIcon, setSortIcon] = useState('');
-  const [sortConfig, setSortConfig] = useState(null);
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
   const [pageFilter, setPageFilter] = useState('');
   const pageNumbers = [];
   const pagesToShow = 10;
@@ -116,8 +116,17 @@ export const List = () => {
   const filteredData = useMemo(() => {
     let computedData = Array.from(userData);
 
-    // if (sortedField !== null) {
-    // }
+    if (sortedField !== null) {
+      computedData.sort((a, b) => {
+        if (a[sortedField] < b[sortedField]) {
+          return sortConfig.direction === 'ascending' ? -1 : 1;
+        }
+        if (a[sortedField] > b[sortedField]) {
+          return sortConfig.direction === 'ascending' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
 
     if (globalSearch !== '') {
       computedData = computedData.filter(
@@ -164,7 +173,7 @@ export const List = () => {
       setFilteredCount(0);
     }
 
-    //setPageSize(pageSize);
+    //setPageSize(computedData.length);
 
     setTotalUsers(userData.length);
 
@@ -173,11 +182,12 @@ export const List = () => {
 
     let slicedData = computedData;
 
-    if (pageFilter === 'All' && slicedData.length > 0) {
+    if (pageFilter === 'All' && slicedData) {
       setPageSize(computedData?.length);
       return computedData;
     } else {
-      slicedData = computedData.slice(currentPage * pageSize, (currentPage + 1) * pageSize);
+      let slicedData = computedData.slice(currentPage * pageSize, (currentPage + 1) * pageSize);
+      //setPageSize(computedData?.length);
       return slicedData;
     }
 
@@ -193,37 +203,26 @@ export const List = () => {
     userData,
     globalSearch,
     pageSize,
-    pageFilter
+    pageFilter,
+    sortConfig.direction,
+    sortedField
   ]);
-
-  const sortedItems = React.useMemo(() => {
-    let sortedData = [...filteredData];
-    if (sortedField !== null) {
-      sortedData.sort((a, b) => {
-        if (a[sortedField] < b[sortedField]) {
-          return sortConfig.direction === 'ascending' ? -1 : 1;
-        }
-        if (a[sortedField] > b[sortedField]) {
-          return sortConfig.direction === 'ascending' ? 1 : -1;
-        }
-        return 0;
-      });
-    }
-    setSortIcon(sortIcon ? 'down' : 'up');
-    return sortedData;
-  }, [filteredData, sortedField, sortConfig, sortIcon]);
 
   //This function is called when sorting operation needs to be applied
   const requestSort = (key) => {
-    let direction = 'ascending';
-    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
-      direction = 'descending';
+    let newDirection = 'ascending';
+    if (sortConfig && sortConfig.key === key) {
+      // If the same key is clicked again, toggle the direction
+      newDirection = sortConfig.direction === 'ascending' ? 'descending' : 'ascending';
     }
+
     setHasClickedHeading((prevClicks) => ({
       ...prevClicks,
       [key]: true
     }));
-    setSortConfig({ key, direction });
+
+    setSortConfig({ key, direction: newDirection }); // Set the direction explicitly
+
     setSortedField(key);
   };
   useEffect(() => {
@@ -286,10 +285,7 @@ export const List = () => {
           <div className="flex justify-between py-3">
             <div className="flex flex-grow justify-between">
               <Modal isOpen={deleteModal} toggle={() => setDeleteModal(!deleteModal)}>
-                <ModalHeader
-                  toggle={() => setDeleteModal(!deleteModal)}
-                  close={() => setDeleteModal(!deleteModal)}
-                >
+                <ModalHeader toggle={() => setDeleteModal(!deleteModal)}>
                   Are you sure you want to delete?
                 </ModalHeader>
                 <ModalBody>
@@ -305,11 +301,11 @@ export const List = () => {
                   </Button>
                 </ModalFooter>
               </Modal>
-              <Modal isOpen={deleteAllUsersModal} toggle={() => setDeleteModal(!deleteModal)}>
-                <ModalHeader
-                  toggle={() => setDeleteModal(!deleteModal)}
-                  close={() => setDeleteModal(!deleteModal)}
-                >
+              <Modal
+                isOpen={deleteAllUsersModal}
+                toggle={() => setDeleteModal(!deleteAllUsersModal)}
+              >
+                <ModalHeader toggle={() => setDeleteModal(!deleteAllUsersModal)}>
                   Are you sure you want to delete?
                 </ModalHeader>
                 <ModalBody>
@@ -567,8 +563,8 @@ export const List = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {sortedItems.length > 0 ? (
-                      sortedItems.map((data) => (
+                    {filteredData.length > 0 ? (
+                      filteredData.map((data) => (
                         <tr key={data.userId}>
                           <td>
                             <Link to={`view/${data.id}`}>{data?.id}</Link>
@@ -576,7 +572,9 @@ export const List = () => {
                           <td>{data?.firstName}</td>
                           <td>{data?.lastName}</td>
                           <td>
-                            <Link to={`mailto:${data?.email}`}>{data?.email}</Link>
+                            <Link to={`mailto:${data?.email.toLowerCase()}`}>
+                              {data?.email.toLowerCase()}
+                            </Link>
                           </td>
                           <td>{formattedDate(data?.createdAt)}</td>
                           <td>{capitalize(data?.status)}</td>

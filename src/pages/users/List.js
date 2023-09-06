@@ -38,8 +38,8 @@ export const List = () => {
   const [sortIcon, setSortIcon] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
   const [pageFilter, setPageFilter] = useState('');
-  const pageNumbers = [];
   const pagesToShow = 10;
+
 
   const handleOpenModal = (itemId) => {
     setSelectedId(itemId);
@@ -74,6 +74,7 @@ export const List = () => {
       localStorage.setItem('STUSERS', JSON.stringify(tempUsers));
       setTotalUsers(tempUsers.length);
     }
+    console.log('RAN', pageFilter, pageSize);
   };
 
   const handleColumnSearch = (e, filterType) => {
@@ -222,7 +223,6 @@ export const List = () => {
     }));
 
     setSortConfig({ key, direction: newDirection }); // Set the direction explicitly
-
     setSortedField(key);
   };
   useEffect(() => {
@@ -232,10 +232,9 @@ export const List = () => {
     }
   }, []);
 
-  for (let i = 1; i <= Math.ceil(totalUsers / pageSize); i++) {
-    pageNumbers.push(i);
-  }
-  const pagesCount = totalUsers === 0 ? 1 : Math.ceil(totalUsers / pageSize);
+
+  console.log('LENGTH', totalUsers, pageSize);
+  const pagesCount = pageSize === 0 ? 1 : Math.ceil(totalUsers / pageSize);
   const startIndex = Math.max(0, currentPage - Math.floor(pagesToShow / 2));
   const endIndex = Math.min(filteredCount - 1, startIndex + pagesToShow - 1);
 
@@ -256,19 +255,12 @@ export const List = () => {
       displayedCount = userData.length < displayedCount ? userData.length : displayedCount;
     }
     return displayedCount;
-  }
-
   const deleteAllUsers = () => {
     setUserData([]);
     localStorage.removeItem('STUSERS');
     setDeleteAllUsersModal(!deleteAllUsersModal);
     setCurrentPage(0);
     setTotalUsers(userData.length);
-    // if (pageFilter === 'All') {
-    //   setPageSize(0);
-    // } else {
-    //   setPageSize(pageFilter);
-    // }
   };
 
   return (
@@ -635,6 +627,7 @@ export const List = () => {
                       : `of ${userData.length} entries`}
                   </p>
                 </div>
+                {console.log('HELLO', pagesCount)}
                 {userData.length > 0 && (
                   <div>
                     <React.Fragment>

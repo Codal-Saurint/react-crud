@@ -255,6 +255,7 @@ export const List = () => {
       displayedCount = userData.length < displayedCount ? userData.length : displayedCount;
     }
     return displayedCount;
+  }
   const deleteAllUsers = () => {
     setUserData([]);
     localStorage.removeItem('STUSERS');
